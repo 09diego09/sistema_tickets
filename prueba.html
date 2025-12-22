@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Prueba Partículas</title>
+    <style>
+        /* 1. Quitamos los márgenes por defecto del navegador */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Evita barras de scroll */
+        }
+
+        /* 2. El contenedor del fondo */
+        #fondo-particulas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /* El degradado azul exacto de tu referencia */
+            background: linear-gradient(135deg, #29abe2 0%, #0071bc 100%);
+            
+            /* IMPORTANTE: Quitamos el z-index negativo para esta prueba
+               para asegurar que se vea al frente */
+            z-index: 1; 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="fondo-particulas"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+    <script>
+        particlesJS("fondo-particulas", {
+            "particles": {
+                "number": {
+                    "value": 120,
+                    "density": { "enable": true, "value_area": 800 }
+                },
+                "color": { "value": "#ffffff" },
+                "shape": { "type": "circle" },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false
+                },
+                "size": {
+                    "value": 3,
+                    "random": true
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 75,
+                    "color": "#ffffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 0.5,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "grab" },
+                    "onclick": { "enable": true, "mode": "push" },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": { "distance": 140, "line_linked": { "opacity": 1 } }
+                }
+            },
+            "retina_detect": true
+        });
+    </script>
+</body>
+</html>
