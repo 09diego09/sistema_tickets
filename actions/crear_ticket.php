@@ -68,14 +68,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             $mail->CharSet = 'UTF-8';
             $mail->isSMTP();
-            $mail->Host       = 'sandbox.smtp.mailtrap.io';
-            $mail->SMTPAuth   = true;
-            $mail->Port       = 2525;
-            $mail->Username   = 'ae5170fadf82e3'; // TUS CREDENCIALES
-            $mail->Password   = '001e4e46de9b92'; // TUS CREDENCIALES
+                    $mail->Host       = 'smtp.gmail.com';
+                    $mail->SMTPAuth   = true;
+                    $mail->SMTPSecure = 'tls'; // Gmail requiere TLS sí o sí
+                    $mail->Port       = 587;
 
-            $mail->setFrom('notificaciones@daccontrols.com', 'HelpDesk DAC');
-            $mail->addAddress('soporte@daccontrols.com', 'Equipo de Soporte');
+                    // TUS CREDENCIALES
+                    $mail->Username   = 'dmc5812@gmail.com'; // <--- TU GMAIL AQUÍ
+                    $mail->Password   = 'gldf wcpf hakh nrcm'; // <--- LA CLAVE DE APLICACIÓN DE 16 LETRAS
+
+                    // QUIÉN LO ENVÍA
+                    $mail->setFrom('dmc5812@gmail.com', 'Soporte HelpDesk (Prueba)');
+                    
+                    // A QUIÉN SE LO ENVIAMOS (Lógica del Supervisor)
+                    // Opción A (Elegante): Usar el email que viene de la base de datos
+                    // $mail->addAddress($usuario['email'], $usuario['nombre']); 
+
+                    // Opción B (Directa para tu prueba): Forzar el correo de tu jefe
+                    $mail->addAddress('diegomolina@dac-controls.com', 'Jefe Supervisor'); 
 
             $mail->isHTML(true);
             $mail->Subject = "Nuevo Ticket #$ticket_id - Asignado a $nombre_tecnico";

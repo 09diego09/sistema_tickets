@@ -37,28 +37,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ticket_id']) && isset(
                 $mail = new PHPMailer(true);
                 try {
                     // Configuración Mailtrap
+                   $mail = new PHPMailer(true);
+
+                    // --- CONFIGURACIÓN GMAIL (REAL) ---
                     $mail->isSMTP();
-                    $mail->Host       = 'sandbox.smtp.mailtrap.io';
+                    $mail->Host       = 'smtp.gmail.com';
                     $mail->SMTPAuth   = true;
-                    $mail->Port       = 2525;
-                    $mail->Username   = 'ae5170fadf82e3'; // TUS CREDENCIALES
-                    $mail->Password   = '001e4e46de9b92'; // TUS CREDENCIALES
-                    $mail->CharSet    = 'UTF-8';
+                    $mail->SMTPSecure = 'tls'; // Gmail requiere TLS sí o sí
+                    $mail->Port       = 587;
 
-                    $mail->setFrom('notificaciones@daccontrols.com', 'HelpDesk DAC');
-                    $mail->addAddress($usuario['email'], $usuario['nombre']);
+                    // TUS CREDENCIALES
+                    $mail->Username   = 'dmc5812@gmail.com'; // <--- TU GMAIL AQUÍ
+                    $mail->Password   = 'gldf wcpf hakh nrcm'; // <--- LA CLAVE DE APLICACIÓN DE 16 LETRAS
 
+                    // QUIÉN LO ENVÍA
+                    $mail->setFrom('dmc5812@gmail.com', 'Soporte HelpDesk (Prueba)');
+                    
+                    // A QUIÉN SE LO ENVIAMOS (Lógica del Supervisor)
+                    // Opción A (Elegante): Usar el email que viene de la base de datos
+                    // $mail->addAddress($usuario['email'], $usuario['nombre']); 
+
+                    // Opción B (Directa para tu prueba): Forzar el correo de tu jefe
+                    $mail->addAddress('diegomolina@dac-controls.com', 'Jefe Supervisor'); 
+
+                    // CONTENIDO
                     $mail->isHTML(true);
-                    $mail->Subject = "Ticket #$ticket_id - Estado: " . strtoupper($nuevo_estado);
+                    $mail->CharSet = 'UTF-8';
+                    $mail->Subject = "Prueba de Sistema de Tickets - Estado: " . strtoupper($nuevo_estado);
                     $mail->Body    = "
                         <div style='font-family: Arial, sans-serif; color: #333;'>
-                            <h2 style='color: #28a745;'>Estado Actualizado</h2>
-                            <p>El ticket <strong>#$ticket_id</strong> ahora está: <strong>" . strtoupper($nuevo_estado) . "</strong></p>
+                            <h2 style='color: #28a745;'>¡Prueba de Correo Real!</h2>
+                            <p>Hola,</p>
+                            <p>Este es un correo enviado automáticamente desde mi <strong>Sistema de Tickets Local</strong> usando el servidor SMTP de Gmail.</p>
+                            <p>El ticket <strong>#$ticket_id</strong> ha cambiado a estado: <strong>" . strtoupper($nuevo_estado) . "</strong>.</p>
                             <hr>
-                            <small>DAC Controls Helpdesk</small>
+                            <small>Desarrollado con PHP y PHPMailer</small>
                         </div>
                     ";
-
+                    
                     $mail->send();
                 } catch (Exception $e) {
                     // Ignoramos errores de correo para no frenar el sistema
