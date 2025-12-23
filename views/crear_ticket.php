@@ -102,21 +102,35 @@ if (!isset($_SESSION['usuario_id'])) {
         </div>
 
         <div class="col-lg-4 d-none d-lg-block">
-            <div class="alert alert-info border-0 shadow-sm" style="border-radius: 15px;">
-                <h5 class="alert-heading fw-bold"><i class="bi bi-info-circle me-2"></i>¿Ayuda Inmediata?</h5>
-                <p class="small">Si tu problema detiene la operación crítica de la empresa, llama directamente a soporte.</p>
-                <hr>
-                <p class="mb-0 fw-bold"><i class="bi bi-telephone-fill me-2"></i> Anexo 5500</p>
-            </div>
             
-            <div class="card border-0 shadow-sm mt-3" style="border-radius: 15px;">
-                <div class="card-body">
-                    <h6 class="fw-bold text-secondary">Tiempos de Respuesta</h6>
-                    <ul class="list-unstyled small text-muted mt-2 mb-0">
-                        <li class="mb-2">🔴 <strong>Crítica:</strong> 1 - 2 horas</li>
-                        <li class="mb-2">🟠 <strong>Alta:</strong> 4 - 8 horas</li>
-                        <li class="mb-2">🟡 <strong>Media:</strong> 24 horas</li>
-                        <li>🟢 <strong>Baja:</strong> 48 horas</li>
+            <div class="card mb-4 border-0 shadow-sm" style="background-color: #d1ecf1; color: #0c5460; border-radius: 15px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold"><i class="bi bi-info-circle-fill me-2"></i>¿Ayuda Inmediata?</h5>
+                    <p class="small mb-2">Si tu problema detiene la operación crítica de la empresa, llama directamente a soporte.</p>
+                    <hr style="opacity: 0.2; border-color: #0c5460;">
+                    <p class="mb-0 fw-bold fs-5"><i class="bi bi-telephone-fill me-2"></i> +56 945685320</p>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-secondary mb-3">Tiempos de Respuesta</h6>
+                    <ul class="list-unstyled small text-muted mb-0">
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="badge bg-danger rounded-circle p-2 me-2"> </span> 
+                            <strong>Crítica:</strong> <span class="ms-auto">1 - 2 horas</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="badge bg-warning text-dark rounded-circle p-2 me-2"> </span>
+                            <strong>Alta:</strong> <span class="ms-auto">4 - 8 horas</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="badge bg-warning rounded-circle p-2 me-2" style="opacity: 0.5"> </span>
+                            <strong>Media:</strong> <span class="ms-auto">24 horas</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <span class="badge bg-success rounded-circle p-2 me-2"> </span>
+                            <strong>Baja:</strong> <span class="ms-auto">48 horas</span>
+                        </li>
                     </ul>
                 </div>
             </div>
