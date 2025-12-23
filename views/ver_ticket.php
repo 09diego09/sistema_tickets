@@ -149,7 +149,7 @@ if ($es_staff) {
         <div class="col-lg-4">
             
             <?php if ($es_staff): ?>
-            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+           <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
                 <div class="card-body p-4">
                     <h6 class="fw-bold text-uppercase text-muted small mb-3">Gestión Operativa</h6>
                     
@@ -157,31 +157,35 @@ if ($es_staff) {
                         <input type="hidden" name="ticket_id" value="<?php echo $ticket['id']; ?>">
                         <label class="form-label small fw-bold text-muted">Asignado a:</label>
                         <div class="input-group">
-                            <select name="agente_id" class="form-select form-select-sm">
-                                <option value="">-- Sin Asignar --</option>
-                                <?php foreach($tecnicos as $tec): ?>
-                                    <option value="<?php echo $tec['id']; ?>" <?php echo ($ticket['agente_id'] == $tec['id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($tec['nombre']); ?>
-                                    </option>
-                                <?php endforeach; ?>
+                            <select name="tecnico_id" class="form-select form-select-sm">
+                                <option value="">Seleccionar...</option>
+                                <?php 
+                                    $stmt_tecs = $pdo->query("SELECT id, nombre FROM usuarios WHERE rol = 'tecnico'");
+                                    while($tec = $stmt_tecs->fetch()){
+                                        $selected = ($ticket['agente_id'] == $tec['id']) ? 'selected' : '';
+                                        echo "<option value='{$tec['id']}' $selected>{$tec['nombre']}</option>";
+                                    }
+                                ?>
                             </select>
                             <button class="btn btn-outline-primary btn-sm" type="submit">Asignar</button>
                         </div>
                     </form>
 
-                    <hr class="opacity-10 my-3">
+                    <hr class="opacity-10">
 
                     <form action="../actions/actualizar_estado.php" method="POST">
-                        <input type="hidden" name="id" value="<?php echo $ticket['id']; ?>">
+                        
+                        <input type="hidden" name="ticket_id" value="<?php echo $ticket['id']; ?>">
+                        
                         <label class="form-label small fw-bold text-muted">Estado:</label>
                         <div class="input-group">
-                            <select name="nuevo_estado" class="form-select form-select-sm">
-                                <option value="abierto" <?php echo ($ticket['estado'] == 'abierto') ? 'selected' : ''; ?>>🔴 Abierto</option>
-                                <option value="en_proceso" <?php echo ($ticket['estado'] == 'en_proceso') ? 'selected' : ''; ?>>🟡 En Proceso</option>
-                                <option value="espera" <?php echo ($ticket['estado'] == 'espera') ? 'selected' : ''; ?>>⚪ En Espera</option>
-                                <option value="cerrado" <?php echo ($ticket['estado'] == 'cerrado') ? 'selected' : ''; ?>>🟢 Cerrado</option>
+                            <select name="estado" class="form-select form-select-sm">
+                                <option value="abierto" <?php echo $ticket['estado']=='abierto'?'selected':''; ?>>🔴 Abierto</option>
+                                <option value="en_proceso" <?php echo $ticket['estado']=='en_proceso'?'selected':''; ?>>🟡 En Proceso</option>
+                                <option value="resuelto" <?php echo $ticket['estado']=='resuelto'?'selected':''; ?>>🟢 Resuelto</option>
+                                <option value="cerrado" <?php echo $ticket['estado']=='cerrado'?'selected':''; ?>>⚫ Cerrado</option>
                             </select>
-                            <button class="btn btn-primary btn-sm" type="submit">Actualizar</button>
+                            <button class="btn btn-primary btn-sm fw-bold" type="submit">Actualizar</button>
                         </div>
                     </form>
                 </div>
