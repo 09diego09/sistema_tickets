@@ -21,109 +21,152 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
-    <style>
-        /* ESTILOS GLOBALES */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-        }
+<style>
+    /* --- FUENTES Y GENERAL --- */
+    body {
+        font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        background-color: #f0f8ff; /* Un fondo azulito muy pálido, tipo "AliceBlue" */
+        color: #334e68; /* Un gris azulado para el texto, menos duro que el negro */
+    }
 
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            background: linear-gradient(180deg, #0071bc 0%, #29abe2 100%);
-            color: white;
-            position: fixed;
-            z-index: 100;
-            transition: all 0.3s;
-        }
+    /* --- BARRA LATERAL (SIDEBAR) CON DEGRADADO --- */
+    /* Reemplazamos el color sólido por el degradado de la marca */
+    .sidebar {
+        width: 260px;
+        min-height: 100vh;
+        /* El degradado mágico: de celeste cián a azul profundo */
+        background: linear-gradient(180deg, #00c6ff 0%, #0072ff 100%);
+        color: white;
+        position: fixed;
+        z-index: 100;
+        box-shadow: 4px 0 15px rgba(0, 198, 255, 0.2); /* Sombra suave celeste */
+    }
 
-        .sidebar-header {
-            padding: 25px 20px;
-            background: rgba(0, 0, 0, 0.1);
-            font-size: 1.4rem;
-            font-weight: bold;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+    .sidebar-header {
+        padding: 25px 20px;
+        background: rgba(255, 255, 255, 0.1); /* Blanco semitransparente */
+        font-size: 1.4rem;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
 
-        .nav-link {
-            color: rgba(255, 255, 255, 0.85);
-            padding: 12px 20px;
-            font-size: 0.95rem;
-            border-left: 4px solid transparent;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-        }
+    /* --- ENLACES DEL MENÚ --- */
+    .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 15px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-right: 4px solid transparent; /* Borde a la derecha para el activo */
+        border-left: none;
+    }
 
-        .nav-link:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.1);
-            border-left-color: #fff;
-        }
+    .nav-link:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.15);
+        padding-left: 30px; /* Pequeño efecto de movimiento a la derecha */
+    }
 
-        .nav-link.active {
-            color: #0071bc;
-            background: white;
-            border-left-color: #29abe2;
-            font-weight: 600;
-        }
+    /* Enlace activo (Página actual) */
+    .nav-link.active {
+        color: #0072ff; /* Azul oscuro para el texto */
+        background: white; /* Fondo blanco puro */
+        border-right-color: #00c6ff; /* Borde celeste vibrante */
+        font-weight: 700;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.05); /* Sombra sutil */
+    }
 
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.1rem;
-        }
+    .nav-link i {
+        margin-right: 12px;
+        font-size: 1.2rem;
+    }
 
-        /* DROPDOWN DEL SIDEBAR */
-        .collapse.show {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        .nav-sub-link {
-            padding-left: 50px !important;
-            font-size: 0.9rem;
-            color: rgba(255,255,255,0.7) !important;
-        }
-        .nav-sub-link:hover {
-            color: white !important;
-        }
+    /* --- CONTENIDO PRINCIPAL --- */
+    .content-wrapper {
+        margin-left: 260px;
+        padding: 40px;
+    }
+
+    /* --- TARJETAS (CARDS) --- */
+  /* --- TARJETAS (CARDS) - ESTILO NUEVO --- */
+    .card {
+        border: 1px solid rgba(0, 0, 0, 0.05); /* Un borde casi invisible por defecto */
+        border-radius: 20px; 
+        /* Sombra suave original */
+        box-shadow: 0 6px 20px rgba(0, 198, 255, 0.08) !important; 
+        /* Transición suave para el brillo y el borde, SIN movimiento */
+        transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Efecto "Glow" al pasar el mouse */
+    .row .card:hover {
+        /* Eliminamos el movimiento: transform: translateY(-5px); */
         
-        .dropdown-toggle::after {
-            margin-left: auto;
-        }
+        /* NUEVO: Hacemos que el borde brille en cian */
+        border-color: rgba(0, 198, 255, 0.5);
+        /* NUEVO: Intensificamos la sombra para que parezca luz */
+        box-shadow: 0 0 25px rgba(0, 198, 255, 0.3) !important;
+    }
+    /* --- BOTONES --- */
+    /* Botón Principal (Primary) - Usamos el celeste vibrante */
+    .btn-primary {
+        background-color: #00c6ff;
+        border-color: #00c6ff;
+        box-shadow: 0 4px 12px rgba(0, 198, 255, 0.3);
+        font-weight: 600;
+        padding: 10px 25px;
+    }
 
-        .content-wrapper {
-            margin-left: 260px;
-            padding: 30px;
-            min-height: 100vh;
-        }
+    .btn-primary:hover {
+        background-color: #00aadd; /* Un poquito más oscuro al pasar el mouse */
+        border-color: #00aadd;
+        box-shadow: 0 6px 15px rgba(0, 198, 255, 0.4);
+    }
 
-        /* PERFIL */
-        .user-panel {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 10px;
-        }
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-        }
-    </style>
+    /* Badges (Etiquetas de estado) más modernas */
+    .rounded-pill {
+        padding-top: 0.5em !important;
+        padding-bottom: 0.5em !important;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* --- PERFIL DE USUARIO EN BARRA LATERAL --- */
+    .user-panel {
+        background: rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin: 0;
+    }
+    .user-avatar {
+        background: white;
+        color: #0072ff; /* Icono azul dentro del círculo blanco */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+#particles-js {
+        position: fixed; /* Se queda fijo al hacer scroll */
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1; /* ¡IMPORTANTE! Se va detrás de todo el contenido */
+        /* El color de fondo ya lo definimos en el 'body', las partículas flotarán sobre él */
+    }
+
+    /* Aseguramos que el wrapper del contenido sea transparente para ver el fondo */
+    .content-wrapper {
+        background: transparent !important;
+    }
+
+</style>
 </head>
 <body>
 
+
+    <div id="particles-js"></div>
     <nav class="sidebar">
-        <div class="sidebar-header">
-            <i class="bi bi-hdd-network"></i> HelpDesk
-        </div>
+<div class="sidebar-header text-center">
+    <img src="../assets/logo_blanco.png" alt="DAC Controls" style="max-width: 80%; height: auto;">
+</div>
 
         <div class="user-panel">
             <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
