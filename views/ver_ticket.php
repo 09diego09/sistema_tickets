@@ -3,135 +3,207 @@
 require '../includes/header.php';
 require '../config/db.php';
 
-// 1. Validar que venga un ID en la URL
-if (!isset($_GET['id']) || empty($_GET['id'])) {
+if (!isset($_GET['id'])) {
     header("Location: dashboard.php");
     exit;
 }
 
 $id_ticket = $_GET['id'];
 
-// 2. Traer toda la información del ticket y del usuario creador
-$sql = "SELECT t.*, u.nombre as creador 
+// 1. OBTENER INFO DEL TICKET + NOMBRE DEL AGENTE ASIGNADO
+$sql = "SELECT t.*, u.nombre as creador, a.nombre as agente_nombre 
         FROM tickets t 
         JOIN usuarios u ON t.usuario_id = u.id 
+        LEFT JOIN usuarios a ON t.agente_id = a.id
         WHERE t.id = :id";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([':id' => $id_ticket]);
 $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Si no existe el ticket, volver al dashboard
 if (!$ticket) {
-    header("Location: dashboard.php?error=no_encontrado");
+    echo "<div class='container mt-5'>Ticket no encontrado.</div>";
+    require '../includes/footer.php';
     exit;
+}
+
+// 2. SEGURIDAD
+$es_staff = ($_SESSION['usuario_rol'] == 'admin' || $_SESSION['usuario_rol'] == 'tecnico');
+$es_mi_ticket = ($ticket['usuario_id'] == $_SESSION['usuario_id']);
+
+if (!$es_staff && !$es_mi_ticket) {
+    echo "<div class='container mt-5 alert alert-danger'>Acceso denegado.</div>";
+    exit;
+}
+
+// 3. CARGAR TÉCNICOS (Para dropdown de asignación)
+$tecnicos = [];
+if ($es_staff) {
+    $stmt = $pdo->query("SELECT id, nombre FROM usuarios WHERE rol = 'tecnico' AND activo = 1");
+    $tecnicos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// 4. CARGAR NOTAS INTERNAS (CORREGIDO: Usando tabla RESPUESTAS)
+$comentarios = [];
+if ($es_staff) {
+    // AQUÍ ESTABA EL ERROR: Cambiamos 'comentarios_internos' por 'respuestas'
+    $sql_com = "SELECT r.*, u.nombre as autor, u.rol 
+                FROM respuestas r 
+                JOIN usuarios u ON r.usuario_id = u.id 
+                WHERE r.ticket_id = :id AND r.tipo = 'interno'
+                ORDER BY r.fecha ASC";
+    $stmt_com = $pdo->prepare($sql_com);
+    $stmt_com->execute([':id' => $id_ticket]);
+    $comentarios = $stmt_com->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
 
-<div class="container-fluid mb-5">
+<div class="container-fluid">
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <div class="text-muted small mb-1">Ticket #<?php echo $ticket['id']; ?></div>
-            <h2 class="fw-bold text-dark mb-0"><?php echo htmlspecialchars($ticket['titulo']); ?></h2>
+            <a href="dashboard.php" class="text-decoration-none text-muted small mb-2 d-block">
+                <i class="bi bi-arrow-left"></i> Volver al Dashboard
+            </a>
+            <h3 class="fw-bold text-dark mb-0">
+                Ticket #<?php echo $ticket['id']; ?>: <?php echo htmlspecialchars($ticket['titulo']); ?>
+            </h3>
         </div>
-        <a href="dashboard.php" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-            <i class="bi bi-arrow-left me-2"></i>Volver al tablero
-        </a>
+        
+        <?php 
+            $bg = 'secondary';
+            if($ticket['estado'] == 'abierto') $bg = 'danger';
+            if($ticket['estado'] == 'en_proceso') $bg = 'warning';
+            if($ticket['estado'] == 'cerrado') $bg = 'success';
+        ?>
+        <span class="badge bg-<?php echo $bg; ?> fs-6 px-4 py-2 rounded-pill text-uppercase">
+            <?php echo str_replace('_', ' ', $ticket['estado']); ?>
+        </span>
     </div>
 
     <div class="row">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
-                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-                    <h5 class="fw-bold text-secondary"><i class="bi bi-file-text me-2"></i>Descripción del Problema</h5>
-                </div>
-                <div class="card-body px-4 pb-4">
-                    <div class="p-3 bg-light rounded text-dark" style="min-height: 150px; line-height: 1.6;">
-                        <?php echo nl2br(htmlspecialchars($ticket['descripcion'])); ?>
-                    </div>
-                    <div class="mt-3 text-muted small text-end">
-                        Creado el: <?php echo date('d/m/Y H:i', strtotime($ticket['fecha_creacion'])); ?>
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-primary mb-3">Descripción del Problema</h5>
+                    <p class="text-muted" style="white-space: pre-wrap;"><?php echo htmlspecialchars($ticket['descripcion']); ?></p>
+                    
+                    <div class="d-flex mt-4 pt-3 border-top">
+                        <small class="text-muted me-4">
+                            <i class="bi bi-calendar3 me-1"></i> Creado: <?php echo date('d/m/Y H:i', strtotime($ticket['fecha_creacion'])); ?>
+                        </small>
+                        <small class="text-muted">
+                            <i class="bi bi-tag me-1"></i> Prioridad: <?php echo ucfirst($ticket['prioridad']); ?>
+                        </small>
                     </div>
                 </div>
             </div>
 
-            </div>
+            <?php if ($es_staff): ?>
+                <div class="card border-0 shadow-sm bg-light mb-4" id="seccionComentarios" style="border-radius: 15px;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-file-lock2-fill me-2"></i>Notas Internas 
+                            <span class="badge bg-dark ms-2" style="font-size: 0.6rem;">PRIVADO</span>
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+                        
+                        <?php if (count($comentarios) > 0): ?>
+                            <div class="mb-4">
+                                <?php foreach($comentarios as $c): ?>
+                                    <div class="d-flex mb-3">
+                                        <div class="me-3">
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                                                <?php echo strtoupper(substr($c['autor'], 0, 1)); ?>
+                                            </div>
+                                        </div>
+                                        <div class="bg-white p-3 rounded shadow-sm w-100">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <strong class="small"><?php echo htmlspecialchars($c['autor']); ?></strong>
+                                                <small class="text-muted" style="font-size: 0.75rem;"><?php echo date('d/m H:i', strtotime($c['fecha'])); ?></small>
+                                            </div>
+                                            <p class="mb-0 small text-muted"><?php echo nl2br(htmlspecialchars($c['mensaje'])); ?></p>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="text-center text-muted small mb-4 opacity-50">
+                                No hay notas internas.
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="../actions/guardar_comentario.php" method="POST">
+                            <input type="hidden" name="ticket_id" value="<?php echo $ticket['id']; ?>">
+                            <div class="input-group">
+                                <textarea name="comentario" class="form-control" placeholder="Escribe una nota interna..." rows="1" required></textarea>
+                                <button class="btn btn-dark" type="submit"><i class="bi bi-send-fill"></i></button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <div class="col-lg-4">
             
+            <?php if ($es_staff): ?>
             <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
                 <div class="card-body p-4">
-                    <h6 class="fw-bold text-uppercase text-muted small mb-3">Gestión</h6>
+                    <h6 class="fw-bold text-uppercase text-muted small mb-3">Gestión Operativa</h6>
                     
-                    <div class="mb-4 text-center">
-                        <span class="d-block text-muted small mb-1">Estado Actual</span>
-                        <?php 
-                            $clase_estado = 'primary';
-                            if($ticket['estado'] == 'cerrado') $clase_estado = 'success';
-                            if($ticket['estado'] == 'abierto') $clase_estado = 'danger'; // Ojo: en tu BD pusiste 'abierto', no 'nuevo'
-                        ?>
-                        <span class="badge bg-<?php echo $clase_estado; ?> fs-6 px-4 py-2 rounded-pill">
-                            <?php echo ucfirst($ticket['estado']); ?>
-                        </span>
-                    </div>
+                    <form action="../actions/asignar_ticket.php" method="POST" class="mb-4">
+                        <input type="hidden" name="ticket_id" value="<?php echo $ticket['id']; ?>">
+                        <label class="form-label small fw-bold text-muted">Asignado a:</label>
+                        <div class="input-group">
+                            <select name="agente_id" class="form-select form-select-sm">
+                                <option value="">-- Sin Asignar --</option>
+                                <?php foreach($tecnicos as $tec): ?>
+                                    <option value="<?php echo $tec['id']; ?>" <?php echo ($ticket['agente_id'] == $tec['id']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($tec['nombre']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button class="btn btn-outline-primary btn-sm" type="submit">Asignar</button>
+                        </div>
+                    </form>
 
-                    <div class="d-grid gap-2">
-                        <?php if($ticket['estado'] != 'cerrado'): ?>
-                            <form action="../actions/actualizar_estado.php" method="POST">
-                                <input type="hidden" name="id" value="<?php echo $ticket['id']; ?>">
-                                <input type="hidden" name="nuevo_estado" value="cerrado">
-                                <button type="submit" class="btn btn-success w-100 fw-bold text-white">
-                                    <i class="bi bi-check-circle-fill me-2"></i> Marcar como Resuelto
-                                </button>
-                            </form>
-                        <?php else: ?>
-                            <form action="../actions/actualizar_estado.php" method="POST">
-                                <input type="hidden" name="id" value="<?php echo $ticket['id']; ?>">
-                                <input type="hidden" name="nuevo_estado" value="abierto">
-                                <button type="submit" class="btn btn-outline-secondary w-100">
-                                    <i class="bi bi-arrow-counterclockwise me-2"></i> Reabrir Ticket
-                                </button>
-                            </form>
-                        <?php endif; ?>
-                    </div>
+                    <hr class="opacity-10 my-3">
+
+                    <form action="../actions/actualizar_estado.php" method="POST">
+                        <input type="hidden" name="id" value="<?php echo $ticket['id']; ?>">
+                        <label class="form-label small fw-bold text-muted">Estado:</label>
+                        <div class="input-group">
+                            <select name="nuevo_estado" class="form-select form-select-sm">
+                                <option value="abierto" <?php echo ($ticket['estado'] == 'abierto') ? 'selected' : ''; ?>>🔴 Abierto</option>
+                                <option value="en_proceso" <?php echo ($ticket['estado'] == 'en_proceso') ? 'selected' : ''; ?>>🟡 En Proceso</option>
+                                <option value="espera" <?php echo ($ticket['estado'] == 'espera') ? 'selected' : ''; ?>>⚪ En Espera</option>
+                                <option value="cerrado" <?php echo ($ticket['estado'] == 'cerrado') ? 'selected' : ''; ?>>🟢 Cerrado</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" type="submit">Actualizar</button>
+                        </div>
+                    </form>
                 </div>
             </div>
+            <?php endif; ?>
 
             <div class="card border-0 shadow-sm" style="border-radius: 15px;">
                 <div class="card-body p-4">
-                    <h6 class="fw-bold text-uppercase text-muted small mb-3">Información de Contacto</h6>
-                    
-                    <ul class="list-unstyled mb-0">
+                    <h6 class="fw-bold text-uppercase text-muted small mb-3">Solicitante</h6>
+                    <ul class="list-unstyled mb-0 small">
                         <li class="mb-3">
                             <i class="bi bi-person text-primary me-2"></i>
-                            <strong>Solicitante:</strong><br>
-                            <span class="ms-4 text-muted"><?php echo htmlspecialchars($ticket['creador']); ?></span>
+                            <strong>Nombre:</strong> <span class="text-muted"><?php echo htmlspecialchars($ticket['creador']); ?></span>
                         </li>
                         <li class="mb-3">
                             <i class="bi bi-building text-primary me-2"></i>
-                            <strong>Departamento:</strong><br>
-                            <span class="ms-4 text-muted"><?php echo htmlspecialchars($ticket['departamento']); ?></span>
-                        </li>
-                        <li class="mb-3">
-                            <i class="bi bi-envelope text-primary me-2"></i>
-                            <strong>Email:</strong><br>
-                            <span class="ms-4 text-muted">
-                                <?php echo !empty($ticket['email_contacto']) ? $ticket['email_contacto'] : 'No especificado'; ?>
-                            </span>
-                        </li>
-                        <li class="mb-3">
-                            <i class="bi bi-telephone text-primary me-2"></i>
-                            <strong>Teléfono:</strong><br>
-                            <span class="ms-4 text-muted">
-                                <?php echo !empty($ticket['telefono_contacto']) ? $ticket['telefono_contacto'] : 'No especificado'; ?>
-                            </span>
+                            <strong>Depto:</strong> <span class="text-muted"><?php echo htmlspecialchars($ticket['departamento']); ?></span>
                         </li>
                         <li>
-                            <i class="bi bi-exclamation-circle text-primary me-2"></i>
-                            <strong>Prioridad:</strong><br>
-                            <span class="ms-4 badge bg-secondary bg-opacity-10 text-dark border">
-                                <?php echo ucfirst($ticket['prioridad']); ?>
-                            </span>
+                            <i class="bi bi-envelope text-primary me-2"></i>
+                            <strong>Email:</strong> 
+                            <span class="text-muted"><?php echo !empty($ticket['email_contacto']) ? $ticket['email_contacto'] : 'No especificado'; ?></span>
                         </li>
                     </ul>
                 </div>

@@ -1,4 +1,14 @@
-<?php require '../includes/header.php'; ?>
+<?php
+// sistema_tickets/views/crear_ticket.php
+require '../includes/header.php';
+require '../config/db.php'; 
+
+// Solo usuarios logueados
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: ../index.php");
+    exit;
+}
+?>
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -6,7 +16,7 @@
             <h3 class="fw-bold text-secondary mb-0">Nuevo Ticket</h3>
             <p class="text-muted small mb-0">Completa el formulario para reportar una incidencia.</p>
         </div>
-        <a href="dashboard.php" class="btn btn-outline-secondary btn-sm">
+        <a href="dashboard.php" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
     </div>
@@ -16,7 +26,7 @@
             <div class="card border-0 shadow-sm" style="border-radius: 15px;">
                 <div class="card-body p-5">
                     
-                    <form action="../actions/guardar_ticket.php" method="POST">
+                    <form action="../actions/crear_ticket.php" method="POST">
                         
                         <h6 class="text-primary fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">
                             <i class="bi bi-person-lines-fill me-2"></i>Información del Solicitante
@@ -30,18 +40,26 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold">Departamento *</label>
-                                <input type="text" name="departamento" class="form-control" placeholder="Ej: Contabilidad, RRHH..." required>
+                                <select name="departamento" class="form-select" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="TI">TI / Sistemas</option>
+                                    <option value="Recursos Humanos">Recursos Humanos</option>
+                                    <option value="Contabilidad">Contabilidad</option>
+                                    <option value="Ventas">Ventas</option>
+                                    <option value="Operaciones">Operaciones</option>
+                                    <option value="Administración">Administración</option>
+                                </select>
                             </div>
                         </div>
 
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold">Teléfono de Contacto</label>
-                                <input type="text" name="contacto" class="form-control" placeholder="+56 9 ...">
+                                <input type="text" name="telefono" class="form-control" placeholder="+56 9 ...">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold">Email de Contacto</label>
-                                <input type="email" name="email" class="form-control" value="usuario@empresa.com">
+                                <input type="email" name="email" class="form-control" value="<?php echo $_SESSION['usuario_email'] ?? ''; ?>">
                             </div>
                         </div>
 
@@ -72,7 +90,7 @@
                                 </select>
                             </div>
                             <div class="col-md-6 text-end">
-                                <button type="submit" class="btn btn-primary px-5 py-2 fw-bold" style="background: linear-gradient(135deg, #0071bc 0%, #29abe2 100%); border:none;">
+                                <button type="submit" class="btn btn-primary px-5 py-2 fw-bold" style="background: linear-gradient(135deg, #0071bc 0%, #29abe2 100%); border:none; border-radius: 50px;">
                                     <i class="bi bi-send-fill me-2"></i> Enviar Ticket
                                 </button>
                             </div>
@@ -85,8 +103,8 @@
 
         <div class="col-lg-4 d-none d-lg-block">
             <div class="alert alert-info border-0 shadow-sm" style="border-radius: 15px;">
-                <h5 class="alert-heading fw-bold"><i class="bi bi-info-circle me-2"></i>¿Necesitas ayuda inmediata?</h5>
-                <p class="small">Si tu problema es crítico y detiene la operación de toda la empresa, por favor llama directamente a soporte.</p>
+                <h5 class="alert-heading fw-bold"><i class="bi bi-info-circle me-2"></i>¿Ayuda Inmediata?</h5>
+                <p class="small">Si tu problema detiene la operación crítica de la empresa, llama directamente a soporte.</p>
                 <hr>
                 <p class="mb-0 fw-bold"><i class="bi bi-telephone-fill me-2"></i> Anexo 5500</p>
             </div>
