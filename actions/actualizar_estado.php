@@ -1,5 +1,15 @@
 <?php
 // actions/actualizar_estado.php
+
+// 1. CARGA DE SECRETOS (Tu lógica está perfecta aquí)
+$ruta_secretos = '../config/secrets.php';
+if (file_exists($ruta_secretos)) {
+    $secrets = require $ruta_secretos;
+} else {
+    // Fallback por si alguien descarga el repo y olvida crear el archivo
+    $secrets = require '../config/secrets.example.php';
+}
+
 session_start();
 require '../config/db.php';
 
@@ -34,50 +44,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ticket_id']) && isset(
             // Verificamos si tiene correo válido
             if ($usuario && !empty($usuario['email']) && filter_var($usuario['email'], FILTER_VALIDATE_EMAIL)) {
                 
-                $mail = new PHPMailer(true);
+                $mail = new PHPMailer(true); // Inicializamos una sola vez
                 try {
-                    // Configuración Mailtrap
-                   $mail = new PHPMailer(true);
-
-                    // --- CONFIGURACIÓN GMAIL (REAL) ---
+                    // --- CONFIGURACIÓN USANDO SECRETS ---
+                    $mail->CharSet = 'UTF-8';
                     $mail->isSMTP();
-                    $mail->Host       = 'smtp.gmail.com';
+                    $mail->Host       = $secrets['smtp_host'];
                     $mail->SMTPAuth   = true;
-                    $mail->SMTPSecure = 'tls'; // Gmail requiere TLS sí o sí
-                    $mail->Port       = 587;
+                    $mail->SMTPSecure = 'tls';
+                    $mail->Port       = $secrets['smtp_port'];
 
-                    // TUS CREDENCIALES
-                    $mail->Username   = 'dmc5812@gmail.com'; // <--- TU GMAIL AQUÍ
-                    $mail->Password   = 'gldf wcpf hakh nrcm'; // <--- LA CLAVE DE APLICACIÓN DE 16 LETRAS
+                    // Credenciales desde el archivo seguro
+                    $mail->Username   = $secrets['smtp_user']; 
+                    $mail->Password   = $secrets['smtp_pass']; 
 
-                    // QUIÉN LO ENVÍA
-                    $mail->setFrom('dmc5812@gmail.com', 'Soporte HelpDesk (Prueba)');
-                    
-                    // A QUIÉN SE LO ENVIAMOS (Lógica del Supervisor)
-                    // Opción A (Elegante): Usar el email que viene de la base de datos
-                    // $mail->addAddress($usuario['email'], $usuario['nombre']); 
+                    // Remitente
+                    $mail->setFrom($secrets['smtp_user'], 'HelpDesk DAC');
 
-                    // Opción B (Directa para tu prueba): Forzar el correo de tu jefe
-                    $mail->addAddress('diegomolina@dac-controls.com', 'Jefe Supervisor'); 
+                    // DESTINATARIO (¡Esto faltaba!)
+                    $mail->addAddress($usuario['email'], $usuario['nombre']);
 
                     // CONTENIDO
                     $mail->isHTML(true);
-                    $mail->CharSet = 'UTF-8';
-                    $mail->Subject = "Prueba de Sistema de Tickets - Estado: " . strtoupper($nuevo_estado);
+                    $mail->Subject = "Ticket #$ticket_id Actualizado - Estado: " . strtoupper($nuevo_estado);
                     $mail->Body    = "
                         <div style='font-family: Arial, sans-serif; color: #333;'>
-                            <h2 style='color: #28a745;'>¡Prueba de Correo Real!</h2>
-                            <p>Hola,</p>
-                            <p>Este es un correo enviado automáticamente desde mi <strong>Sistema de Tickets Local</strong> usando el servidor SMTP de Gmail.</p>
-                            <p>El ticket <strong>#$ticket_id</strong> ha cambiado a estado: <strong>" . strtoupper($nuevo_estado) . "</strong>.</p>
+                            <h2 style='color: #28a745;'>¡Actualización de Ticket!</h2>
+                            <p>Hola <strong>{$usuario['nombre']}</strong>,</p>
+                            <p>Te informamos que tu ticket <strong>#$ticket_id</strong> ha cambiado a estado:</p>
+                            <h3 style='background-color: #f8f9fa; padding: 10px; border-left: 5px solid #28a745; display: inline-block;'>
+                                " . strtoupper($nuevo_estado) . "
+                            </h3>
                             <hr>
-                            <small>Desarrollado con PHP y PHPMailer</small>
+                            <small>Sistema de Tickets DAC Controls</small>
                         </div>
                     ";
                     
                     $mail->send();
+
                 } catch (Exception $e) {
                     // Ignoramos errores de correo para no frenar el sistema
+                    // (Opcional: puedes descomentar la siguiente línea para depurar si falla)
+                    // error_log("Error Mailer: " . $mail->ErrorInfo);
                 }
             }
         }

@@ -1,5 +1,15 @@
 <?php
 // actions/crear_ticket.php
+
+// 1. CARGA DE SECRETOS (Esto está perfecto)
+$ruta_secretos = '../config/secrets.php';
+if (file_exists($ruta_secretos)) {
+    $secrets = require $ruta_secretos;
+} else {
+    // Fallback por si falta el archivo
+    $secrets = require '../config/secrets.example.php';
+}
+
 session_start();
 require '../config/db.php'; 
 
@@ -23,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // ---------------------------------------------------------
         // PASO 1: LÓGICA DE ASIGNACIÓN AUTOMÁTICA
         // ---------------------------------------------------------
-        // CORRECCIÓN: Usamos 'agente_id' en lugar de 'tecnico_id'
         $sql_asignacion = "
             SELECT u.id, u.nombre, COUNT(t.id) as carga_trabajo
             FROM usuarios u
@@ -44,14 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // ---------------------------------------------------------
         // PASO 2: GUARDAR EN BASE DE DATOS
         // ---------------------------------------------------------
-        // CORRECCIÓN: Insertamos en 'agente_id'
         $sql = "INSERT INTO tickets (usuario_id, agente_id, titulo, descripcion, prioridad, departamento, estado, fecha_creacion) 
                 VALUES (:usuario_id, :agente_id, :titulo, :descripcion, :prioridad, :departamento, 'abierto', NOW())";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':usuario_id' => $usuario_id,
-            ':agente_id' => $agente_id,  // Usamos la variable con el ID del técnico
+            ':agente_id' => $agente_id,
             ':titulo' => $titulo,
             ':descripcion' => $descripcion,
             ':prioridad' => $prioridad,
@@ -66,27 +74,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // ---------------------------------------------------------
         $mail = new PHPMailer(true);
         try {
+            // Configuración del Servidor usando SECRETS
             $mail->CharSet = 'UTF-8';
             $mail->isSMTP();
-                    $mail->Host       = 'smtp.gmail.com';
-                    $mail->SMTPAuth   = true;
-                    $mail->SMTPSecure = 'tls'; // Gmail requiere TLS sí o sí
-                    $mail->Port       = 587;
+            $mail->Host       = $secrets['smtp_host']; 
+            $mail->SMTPAuth   = true;
+            $mail->SMTPSecure = 'tls';
+            $mail->Port       = $secrets['smtp_port'];
 
-                    // TUS CREDENCIALES
-                    $mail->Username   = 'dmc5812@gmail.com'; // <--- TU GMAIL AQUÍ
-                    $mail->Password   = 'gldf wcpf hakh nrcm'; // <--- LA CLAVE DE APLICACIÓN DE 16 LETRAS
+            // Credenciales
+            $mail->Username   = $secrets['smtp_user']; 
+            $mail->Password   = $secrets['smtp_pass']; 
 
-                    // QUIÉN LO ENVÍA
-                    $mail->setFrom('dmc5812@gmail.com', 'Soporte HelpDesk (Prueba)');
-                    
-                    // A QUIÉN SE LO ENVIAMOS (Lógica del Supervisor)
-                    // Opción A (Elegante): Usar el email que viene de la base de datos
-                    // $mail->addAddress($usuario['email'], $usuario['nombre']); 
+            // Remitente
+            $mail->setFrom($secrets['smtp_user'], 'HelpDesk DAC');
+            
+            // DESTINATARIO (Prueba Supervisor)
+            $mail->addAddress('diegomolina@dac-controls.com', 'Jefe Supervisor'); 
 
-                    // Opción B (Directa para tu prueba): Forzar el correo de tu jefe
-                    $mail->addAddress('diegomolina@dac-controls.com', 'Jefe Supervisor'); 
-
+            // CONTENIDO
             $mail->isHTML(true);
             $mail->Subject = "Nuevo Ticket #$ticket_id - Asignado a $nombre_tecnico";
             
