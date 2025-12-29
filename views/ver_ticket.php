@@ -1,5 +1,5 @@
 <?php
-// views/ver_ticket.php (Inicio del archivo)
+// views/ver_ticket.php
 require '../includes/header.php';
 require '../config/db.php';
 
@@ -11,8 +11,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $id_ticket = $_GET['id'];
 
-// --- CONSULTA CORREGIDA ---
-// Agregamos 'u.email as email_creador' para traer el correo real del usuario
+// 1. CONSULTA DEL TICKET (Incluye el email del creador)
 $sql = "SELECT t.*, u.nombre as creador, u.email as email_creador 
         FROM tickets t 
         JOIN usuarios u ON t.usuario_id = u.id 
@@ -27,7 +26,7 @@ if (!$ticket) {
     exit;
 }
 
-// 2. SEGURIDAD
+// 2. SEGURIDAD: Permisos de visualización
 $es_staff = ($_SESSION['usuario_rol'] == 'admin' || $_SESSION['usuario_rol'] == 'tecnico');
 $es_mi_ticket = ($ticket['usuario_id'] == $_SESSION['usuario_id']);
 
@@ -36,25 +35,18 @@ if (!$es_staff && !$es_mi_ticket) {
     exit;
 }
 
-// 3. CARGAR TÉCNICOS (Para dropdown de asignación)
-$tecnicos = [];
+// 3. CARGAR NOTAS INTERNAS (CORREGIDO: Usando tabla notas_tickets)
+$notas = [];
 if ($es_staff) {
-    $stmt = $pdo->query("SELECT id, nombre FROM usuarios WHERE rol = 'tecnico' AND activo = 1");
-    $tecnicos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// 4. CARGAR NOTAS INTERNAS (CORREGIDO: Usando tabla RESPUESTAS)
-$comentarios = [];
-if ($es_staff) {
-    // AQUÍ ESTABA EL ERROR: Cambiamos 'comentarios_internos' por 'respuestas'
-    $sql_com = "SELECT r.*, u.nombre as autor, u.rol 
-                FROM respuestas r 
-                JOIN usuarios u ON r.usuario_id = u.id 
-                WHERE r.ticket_id = :id AND r.tipo = 'interno'
-                ORDER BY r.fecha ASC";
-    $stmt_com = $pdo->prepare($sql_com);
-    $stmt_com->execute([':id' => $id_ticket]);
-    $comentarios = $stmt_com->fetchAll(PDO::FETCH_ASSOC);
+    // AQUI CAMBIAMOS: Usamos la tabla nueva y ordenamos por fecha descendente (lo nuevo primero)
+    $sql_notas = "SELECT n.*, u.nombre as autor, u.rol 
+                  FROM notas_tickets n 
+                  JOIN usuarios u ON n.usuario_id = u.id 
+                  WHERE n.ticket_id = :id 
+                  ORDER BY n.fecha DESC";
+    $stmt_notas = $pdo->prepare($sql_notas);
+    $stmt_notas->execute([':id' => $id_ticket]);
+    $notas = $stmt_notas->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
 
@@ -74,7 +66,8 @@ if ($es_staff) {
             $bg = 'secondary';
             if($ticket['estado'] == 'abierto') $bg = 'danger';
             if($ticket['estado'] == 'en_proceso') $bg = 'warning';
-            if($ticket['estado'] == 'cerrado') $bg = 'success';
+            if($ticket['estado'] == 'resuelto') $bg = 'success';
+            if($ticket['estado'] == 'cerrado') $bg = 'dark';
         ?>
         <span class="badge bg-<?php echo $bg; ?> fs-6 px-4 py-2 rounded-pill text-uppercase">
             <?php echo str_replace('_', ' ', $ticket['estado']); ?>
@@ -83,6 +76,7 @@ if ($es_staff) {
 
     <div class="row">
         <div class="col-lg-8">
+            
             <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
                 <div class="card-body p-4">
                     <h5 class="fw-bold text-primary mb-3">Descripción del Problema</h5>
@@ -100,44 +94,44 @@ if ($es_staff) {
             </div>
 
             <?php if ($es_staff): ?>
-                <div class="card border-0 shadow-sm bg-light mb-4" id="seccionComentarios" style="border-radius: 15px;">
+                <div class="card border-0 shadow-sm bg-light mb-4" id="seccionNotas" style="border-radius: 15px;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4">
                         <h6 class="fw-bold text-dark mb-0">
-                            <i class="bi bi-file-lock2-fill me-2"></i>Notas Internas 
+                            <i class="bi bi-chat-left-text-fill me-2"></i>Notas Internas 
                             <span class="badge bg-dark ms-2" style="font-size: 0.6rem;">PRIVADO</span>
                         </h6>
                     </div>
                     <div class="card-body p-4">
                         
-                        <?php if (count($comentarios) > 0): ?>
-                            <div class="mb-4">
-                                <?php foreach($comentarios as $c): ?>
-                                    <div class="d-flex mb-3">
+                        <div class="bg-white p-3 rounded mb-3 shadow-sm" style="max-height: 300px; overflow-y: auto;">
+                            <?php if (count($notas) > 0): ?>
+                                <?php foreach($notas as $nota): ?>
+                                    <div class="d-flex mb-3 border-bottom pb-2">
                                         <div class="me-3">
-                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; font-size: 0.8rem;">
-                                                <?php echo strtoupper(substr($c['autor'], 0, 1)); ?>
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; font-size: 0.8rem; font-weight: bold;">
+                                                <?php echo strtoupper(substr($nota['autor'], 0, 1)); ?>
                                             </div>
                                         </div>
-                                        <div class="bg-white p-3 rounded shadow-sm w-100">
+                                        <div class="w-100">
                                             <div class="d-flex justify-content-between mb-1">
-                                                <strong class="small"><?php echo htmlspecialchars($c['autor']); ?></strong>
-                                                <small class="text-muted" style="font-size: 0.75rem;"><?php echo date('d/m H:i', strtotime($c['fecha'])); ?></small>
+                                                <strong class="small text-dark"><?php echo htmlspecialchars($nota['autor']); ?></strong>
+                                                <small class="text-muted" style="font-size: 0.75rem;"><?php echo date('d/m H:i', strtotime($nota['fecha'])); ?></small>
                                             </div>
-                                            <p class="mb-0 small text-muted"><?php echo nl2br(htmlspecialchars($c['mensaje'])); ?></p>
+                                            <p class="mb-0 small text-secondary"><?php echo nl2br(htmlspecialchars($nota['nota'])); ?></p>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="text-center text-muted small mb-4 opacity-50">
-                                No hay notas internas.
-                            </div>
-                        <?php endif; ?>
+                            <?php else: ?>
+                                <div class="text-center text-muted small py-3 opacity-50">
+                                    No hay notas internas registradas.
+                                </div>
+                            <?php endif; ?>
+                        </div>
 
-                        <form action="../actions/guardar_comentario.php" method="POST">
+                        <form action="../actions/agregar_nota.php" method="POST">
                             <input type="hidden" name="ticket_id" value="<?php echo $ticket['id']; ?>">
                             <div class="input-group">
-                                <textarea name="comentario" class="form-control" placeholder="Escribe una nota interna..." rows="1" required></textarea>
+                                <input type="text" name="nota" class="form-control" placeholder="Escribe una nota interna..." required>
                                 <button class="btn btn-dark" type="submit"><i class="bi bi-send-fill"></i></button>
                             </div>
                         </form>
@@ -150,7 +144,7 @@ if ($es_staff) {
         <div class="col-lg-4">
             
             <?php if ($es_staff): ?>
-           <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
                 <div class="card-body p-4">
                     <h6 class="fw-bold text-uppercase text-muted small mb-3">Gestión Operativa</h6>
                     
@@ -161,7 +155,8 @@ if ($es_staff) {
                             <select name="tecnico_id" class="form-select form-select-sm">
                                 <option value="">Seleccionar...</option>
                                 <?php 
-                                    $stmt_tecs = $pdo->query("SELECT id, nombre FROM usuarios WHERE rol = 'tecnico'");
+                                    // Listar técnicos activos
+                                    $stmt_tecs = $pdo->query("SELECT id, nombre FROM usuarios WHERE rol = 'tecnico' AND activo = 1");
                                     while($tec = $stmt_tecs->fetch()){
                                         $selected = ($ticket['agente_id'] == $tec['id']) ? 'selected' : '';
                                         echo "<option value='{$tec['id']}' $selected>{$tec['nombre']}</option>";
@@ -175,9 +170,7 @@ if ($es_staff) {
                     <hr class="opacity-10">
 
                     <form action="../actions/actualizar_estado.php" method="POST">
-                        
                         <input type="hidden" name="ticket_id" value="<?php echo $ticket['id']; ?>">
-                        
                         <label class="form-label small fw-bold text-muted">Estado:</label>
                         <div class="input-group">
                             <select name="estado" class="form-select form-select-sm">
@@ -193,10 +186,9 @@ if ($es_staff) {
             </div>
             <?php endif; ?>
 
-<div class="card border-0 shadow-sm" style="border-radius: 15px;">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
                 <div class="card-body p-4">
                     <h6 class="fw-bold text-uppercase text-muted small mb-3">SOLICITANTE</h6>
-                    
                     <ul class="list-unstyled mb-0">
                         <li class="mb-3">
                             <i class="bi bi-person text-primary me-2"></i>

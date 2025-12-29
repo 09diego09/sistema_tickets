@@ -61,18 +61,25 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <td>
     <?php 
         $rol_texto = '';
-        $rol_clase = 'secondary'; // Color gris por defecto
+        $rol_clase = 'secondary';
+        
+        // Limpiamos el dato
+        $rol_db = strtolower(trim($u['rol']));
 
-        if ($u['rol'] === 'admin') {
+        // --- LINEA DE DEPURACIÓN (RAYOS X) ---
+        // Esto imprimirá el valor real en pantalla, entre paréntesis
+       // echo "<small class='text-muted me-2'>($rol_db)</small>"; 
+        // -------------------------------------
+
+        if ($rol_db === 'admin') {
             $rol_texto = 'ADMIN';
-            $rol_clase = 'dark'; // Negro
-        } elseif ($u['rol'] === 'tecnico') {
+            $rol_clase = 'dark';
+        } elseif ($rol_db === 'tecnico' || $rol_db === 'técnico') {
             $rol_texto = 'TÉCNICO';
-            $rol_clase = 'primary'; // Azul
+            $rol_clase = 'primary';
         } else {
-            // AQUÍ ESTABA EL HUECO: Agregamos el caso por defecto
             $rol_texto = 'USUARIO';
-            $rol_clase = 'info'; // Un color celeste o gris claro (secondary)
+            $rol_clase = 'info';
         }
     ?>
     <span class="badge bg-<?php echo $rol_clase; ?> text-uppercase">
@@ -194,7 +201,7 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         document.getElementById('usuario_id').value = usuario.id; // ID lleno = Actualizar
         document.getElementById('nombre').value = usuario.nombre;
         document.getElementById('email').value = usuario.email;
-        document.getElementById('rol').value = usuario.rol;
+        document.getElementById('rol').value = usuario.rol; // Aquí es importante que coincida con los values del select
         document.getElementById('activo').value = usuario.activo;
 
         // Ajustar textos de contraseña (opcional al editar)
