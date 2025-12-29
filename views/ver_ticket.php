@@ -1,28 +1,29 @@
 <?php
-// sistema_tickets/views/ver_ticket.php
+// views/ver_ticket.php (Inicio del archivo)
 require '../includes/header.php';
 require '../config/db.php';
 
-if (!isset($_GET['id'])) {
+// Validar ID
+if (!isset($_GET['id']) || empty($_GET['id'])) {
     header("Location: dashboard.php");
     exit;
 }
 
 $id_ticket = $_GET['id'];
 
-// 1. OBTENER INFO DEL TICKET + NOMBRE DEL AGENTE ASIGNADO
-$sql = "SELECT t.*, u.nombre as creador, a.nombre as agente_nombre 
+// --- CONSULTA CORREGIDA ---
+// Agregamos 'u.email as email_creador' para traer el correo real del usuario
+$sql = "SELECT t.*, u.nombre as creador, u.email as email_creador 
         FROM tickets t 
         JOIN usuarios u ON t.usuario_id = u.id 
-        LEFT JOIN usuarios a ON t.agente_id = a.id
         WHERE t.id = :id";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute([':id' => $id_ticket]);
 $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$ticket) {
-    echo "<div class='container mt-5'>Ticket no encontrado.</div>";
-    require '../includes/footer.php';
+    header("Location: dashboard.php?error=no_encontrado");
     exit;
 }
 
@@ -192,22 +193,27 @@ if ($es_staff) {
             </div>
             <?php endif; ?>
 
-            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+<div class="card border-0 shadow-sm" style="border-radius: 15px;">
                 <div class="card-body p-4">
-                    <h6 class="fw-bold text-uppercase text-muted small mb-3">Solicitante</h6>
-                    <ul class="list-unstyled mb-0 small">
+                    <h6 class="fw-bold text-uppercase text-muted small mb-3">SOLICITANTE</h6>
+                    
+                    <ul class="list-unstyled mb-0">
                         <li class="mb-3">
                             <i class="bi bi-person text-primary me-2"></i>
-                            <strong>Nombre:</strong> <span class="text-muted"><?php echo htmlspecialchars($ticket['creador']); ?></span>
+                            <strong>Nombre:</strong>
+                            <span class="text-muted ms-1"><?php echo htmlspecialchars($ticket['creador']); ?></span>
                         </li>
                         <li class="mb-3">
                             <i class="bi bi-building text-primary me-2"></i>
-                            <strong>Depto:</strong> <span class="text-muted"><?php echo htmlspecialchars($ticket['departamento']); ?></span>
+                            <strong>Depto:</strong>
+                            <span class="text-muted ms-1"><?php echo htmlspecialchars($ticket['departamento']); ?></span>
                         </li>
                         <li>
                             <i class="bi bi-envelope text-primary me-2"></i>
-                            <strong>Email:</strong> 
-                            <span class="text-muted"><?php echo !empty($ticket['email_contacto']) ? $ticket['email_contacto'] : 'No especificado'; ?></span>
+                            <strong>Email:</strong><br>
+                            <span class="text-muted ms-4">
+                                <?php echo !empty($ticket['email_creador']) ? $ticket['email_creador'] : 'No especificado'; ?>
+                            </span>
                         </li>
                     </ul>
                 </div>

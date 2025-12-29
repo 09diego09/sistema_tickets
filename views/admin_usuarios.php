@@ -58,17 +58,27 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         </td>
 
-                        <td>
-                            <?php 
-                                $bg_rol = 'secondary';
-                                if($u['rol'] == 'admin') $bg_rol = 'dark';
-                                if($u['rol'] == 'tecnico') $bg_rol = 'info';
-                                if($u['rol'] == 'usuario') $bg_rol = 'light text-dark border';
-                            ?>
-                            <span class="badge bg-<?php echo $bg_rol; ?> px-3 rounded-pill text-uppercase">
-                                <?php echo ucfirst($u['rol']); ?>
-                            </span>
-                        </td>
+<td>
+    <?php 
+        $rol_texto = '';
+        $rol_clase = 'secondary'; // Color gris por defecto
+
+        if ($u['rol'] === 'admin') {
+            $rol_texto = 'ADMIN';
+            $rol_clase = 'dark'; // Negro
+        } elseif ($u['rol'] === 'tecnico') {
+            $rol_texto = 'TÉCNICO';
+            $rol_clase = 'primary'; // Azul
+        } else {
+            // AQUÍ ESTABA EL HUECO: Agregamos el caso por defecto
+            $rol_texto = 'USUARIO';
+            $rol_clase = 'info'; // Un color celeste o gris claro (secondary)
+        }
+    ?>
+    <span class="badge bg-<?php echo $rol_clase; ?> text-uppercase">
+        <?php echo $rol_texto; ?>
+    </span>
+</td>
 
                         <td>
                             <?php if($u['activo']): ?>
