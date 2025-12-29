@@ -1,54 +1,63 @@
 <?php
 // includes/mailer.php
+
+// 1. Cargamos el archivo de claves (si existe)
+// Salimos de 'includes' (../) y entramos a 'config'
+$ruta_secretos = __DIR__ . '/../config/secrets.php';
+
+if (file_exists($ruta_secretos)) {
+    require_once $ruta_secretos;
+} else {
+    // Esto detendrá el sistema si no encuentra las claves
+    die("Error de seguridad: No encuentro el archivo de configuración en: " . $ruta_secretos);
+}
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// 1. CARGA DE LIBRERÍAS (Ruta Absoluta para evitar errores)
-// __DIR__ es "D:\XAMPP\htdocs\sistema_tickets\includes"
-require __DIR__ . '/../PHPMailer/src/Exception.php';
-require __DIR__ . '/../PHPMailer/src/PHPMailer.php';
-require __DIR__ . '/../PHPMailer/src/SMTP.php';
+require __DIR__ . '/PHPMailer/src/Exception.php';
+require __DIR__ . '/PHPMailer/src/PHPMailer.php';
+require __DIR__ . '/PHPMailer/src/SMTP.php';
 
+// ==========================================
+// CONFIGURACIÓN CENTRAL (MOTOR DE CORREO)
+// ==========================================
 function getMailer() {
     $mail = new PHPMailer(true);
     try {
-        // Configuración del Servidor
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com'; 
+        $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         
-        // --- TUS CREDENCIALES ---
-        $mail->Username   = 'dmc5812@gmail.com'; 
-        // ¡OJO! Aquí debe ir la Contraseña de Aplicación de 16 caracteres (sin espacios)
-        $mail->Password   = 'ntrn lekd sukv rñqj'; 
-        // ------------------------
+        // Usamos las constantes definidas en secrets.php
+        $mail->Username   = SMTP_SECURE_EMAIL; 
+        $mail->Password   = SMTP_SECURE_PASS;  
 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587; 
+        $mail->Port       = 587;
         
-        $mail->setFrom('dmc5812@gmail.com', 'Sistema Tickets'); // Gmail obliga a que el remitente sea tu correo real
         $mail->CharSet = 'UTF-8';
+        $mail->setFrom(SMTP_SECURE_EMAIL, 'Sistema de Tickets'); 
 
         return $mail;
-
     } catch (Exception $e) {
         return null;
     }
 }
 
-// 2. FUNCIÓN DE NOTIFICACIÓN
+// ==========================================
+// FUNCIÓN 1: NOTIFICACIÓN DE NOTAS (Con copia oculta)
+// ==========================================
 function notificarNuevaNota($ticket_id, $titulo_ticket, $autor_nombre, $contenido_nota, $lista_emails) {
     
     $mail = getMailer(); 
 
     if (!$mail || empty($lista_emails)) {
-        // Debug temporal: Si falla la carga del mailer
         error_log("Error: getMailer devolvió null o lista de emails vacía.");
         return false;
     }
 
     try {
-        // Limpiar destinatarios previos por seguridad
         $mail->clearAddresses();
         $mail->clearBCCs();
 
@@ -76,8 +85,37 @@ function notificarNuevaNota($ticket_id, $titulo_ticket, $autor_nombre, $contenid
         return true;
 
     } catch (Exception $e) {
-        // Esto escribirá el error en el archivo de logs de PHP (xampp/php/logs/php_error_log)
         error_log("Error enviando email: " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+// ==========================================
+// FUNCIÓN 2: ENVÍO GENÉRICO (El puente)
+// ==========================================
+function enviarCorreo($destinatario_email, $destinatario_nombre, $asunto, $cuerpo_html) {
+    
+    $mail = getMailer(); 
+
+    if (!$mail) {
+        error_log("Mailer Error: No se pudo obtener la instancia del mailer.");
+        return false;
+    }
+
+    try {
+        $mail->clearAddresses();
+        
+        $mail->addAddress($destinatario_email, $destinatario_nombre);
+
+        $mail->Subject = $asunto;
+        $mail->Body    = $cuerpo_html;
+        $mail->AltBody = strip_tags($cuerpo_html);
+
+        $mail->send();
+        return true;
+
+    } catch (Exception $e) {
+        error_log("Error enviando correo a $destinatario_email: " . $mail->ErrorInfo);
         return false;
     }
 }
