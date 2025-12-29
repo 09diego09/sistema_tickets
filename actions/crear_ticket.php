@@ -6,24 +6,30 @@ require '../includes/mailer.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
+    // 1. VALIDACIÓN BÁSICA DE SESIÓN
+    if (!isset($_SESSION['usuario_id'])) {
+        header("Location: ../index.php");
+        exit;
+    }
+
     $usuario_id = $_SESSION['usuario_id'];
-    // Validamos que exista el nombre en sesión, si no, ponemos uno genérico
     $usuario_nombre = isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario';
 
-    $titulo = $_POST['titulo'];
-    $descripcion = $_POST['descripcion'];
-    $prioridad = $_POST['prioridad'];
+    // 2. RECIBIR Y LIMPIAR DATOS (Agregamos trim para borrar espacios extra)
+    $titulo       = trim($_POST['titulo']);
+    $descripcion  = trim($_POST['descripcion']);
+    $prioridad    = $_POST['prioridad'];
     $departamento = $_POST['departamento'];
 
     try {
         // ---------------------------------------------------------
-        // 1. ASIGNACIÓN AUTOMÁTICA
+        // A. ASIGNACIÓN AUTOMÁTICA (Algoritmo de Carga de Trabajo)
         // ---------------------------------------------------------
         $sql_asignacion = "
             SELECT u.id, u.nombre, COUNT(t.id) as carga_trabajo
             FROM usuarios u
             LEFT JOIN tickets t ON u.id = t.agente_id AND t.estado != 'resuelto'
-            WHERE u.rol = 'tecnico'
+            WHERE u.rol = 'tecnico' AND u.activo = 1
             GROUP BY u.id
             ORDER BY carga_trabajo ASC
             LIMIT 1
@@ -35,81 +41,110 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nombre_tecnico = $tecnico_asignado ? $tecnico_asignado['nombre'] : 'Por Asignar';
 
         // ---------------------------------------------------------
-        // 2. GUARDAR EN BASE DE DATOS
+        // B. GUARDAR EN BASE DE DATOS
         // ---------------------------------------------------------
         $sql = "INSERT INTO tickets (usuario_id, agente_id, titulo, descripcion, prioridad, departamento, estado, fecha_creacion) 
                 VALUES (:usuario_id, :agente_id, :titulo, :descripcion, :prioridad, :departamento, 'abierto', NOW())";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            ':usuario_id' => $usuario_id,
-            ':agente_id' => $agente_id,
-            ':titulo' => $titulo,
-            ':descripcion' => $descripcion,
-            ':prioridad' => $prioridad,
+            ':usuario_id'   => $usuario_id,
+            ':agente_id'    => $agente_id,
+            ':titulo'       => $titulo,
+            ':descripcion'  => $descripcion,
+            ':prioridad'    => $prioridad,
             ':departamento' => $departamento
         ]);
 
         $ticket_id = $pdo->lastInsertId(); 
 
         // ---------------------------------------------------------
-        // 3. ENVIAR NOTIFICACIONES
+        // C. ENVIAR NOTIFICACIONES (DISEÑO PREMIUM ACTUALIZADO)
         // ---------------------------------------------------------
         
-        // A) Al Usuario Creador (Confirmación)
-        // Buscamos su email real en la BD
+        // 1. Al Usuario Creador (Diseño Azul Corporativo)
         $stmt_u = $pdo->prepare("SELECT email FROM usuarios WHERE id = :id");
         $stmt_u->execute([':id' => $usuario_id]);
         $user_data = $stmt_u->fetch();
         
         if ($user_data && !empty($user_data['email'])) {
-            $asunto = "Ticket #$ticket_id Creado Exitosamente";
+            $asunto = "✔ Ticket #$ticket_id Recibido - DAC Controls";
+            
+            // HTML Estilizado (Tarjeta moderna)
             $html = "
-            <div style='font-family: Arial, color: #333;'>
-                <h2 style='color: #007bff;'>¡Ticket Recibido!</h2>
-                <p>Hola <strong>$usuario_nombre</strong>, tu solicitud ha sido registrada.</p>
-                <ul>
-                    <li><strong>ID:</strong> #$ticket_id</li>
-                    <li><strong>Título:</strong> $titulo</li>
-                    <li><strong>Asignado a:</strong> $nombre_tecnico</li>
-                </ul>
-                <p>Te notificaremos cuando haya cambios.</p>
+            <div style='font-family: Arial, sans-serif; max-width: 600px; color: #333; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;'>
+                <div style='background-color: #0d6efd; color: white; padding: 20px; text-align: center;'>
+                    <h2 style='margin:0;'>Ticket Registrado</h2>
+                </div>
+                <div style='padding: 20px;'>
+                    <p>Hola <strong>$usuario_nombre</strong>,</p>
+                    <p>Tu solicitud ha sido ingresada correctamente a nuestro sistema.</p>
+                    
+                    <div style='background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #0d6efd; margin: 15px 0;'>
+                        <p style='margin: 5px 0;'><strong>📂 Título:</strong> $titulo</p>
+                        <p style='margin: 5px 0;'><strong>🛠️ Asignado a:</strong> $nombre_tecnico</p>
+                        <p style='margin: 5px 0;'><strong>🚦 Prioridad:</strong> " . ucfirst($prioridad) . "</p>
+                    </div>
+
+                    <p style='text-align: center; margin-top: 25px;'>
+                        <a href='http://localhost/sistema_tickets/views/ver_ticket.php?id=$ticket_id' 
+                           style='background-color: #0d6efd; color: white; padding: 10px 20px; text-decoration: none; border-radius: 50px; font-weight: bold;'>
+                           Ver Estado del Ticket
+                        </a>
+                    </p>
+                </div>
+                <div style='background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 12px; color: #666;'>
+                    Sistema de Tickets - DAC Controls
+                </div>
             </div>";
             
             enviarCorreo($user_data['email'], $usuario_nombre, $asunto, $html);
         }
 
-        // B) Al Supervisor (Alerta Visual Mejorada)
-        $supervisor_email = 'diegomolina@dac-controls.com'; // <--- Tu correo de admin
+        // 2. Al Supervisor (Diseño Alerta Amarilla)
+        $supervisor_email = 'diegomolina@dac-controls.com'; // <--- CORREO ADMIN
         
-        $asunto_sup = "🔔 Nuevo Ticket #$ticket_id - Prioridad: " . strtoupper($prioridad);
+        $asunto_sup = "🔔 Nuevo Ticket #$ticket_id ($departamento)";
         $html_sup = "
-        <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px;'>
-            <h2 style='color: #d63384;'>⚠️ Nuevo Ticket Registrado</h2>
-            <p>Se ha creado una nueva solicitud en el sistema.</p>
-            
-            <div style='background-color: #fff3cd; padding: 15px; border-radius: 5px; border-left: 5px solid #ffc107; margin: 20px 0;'>
-                <p><strong>👤 Usuario:</strong> $usuario_nombre</p>
-                <p><strong>📂 Título:</strong> $titulo</p>
-                <p><strong>🏢 Depto:</strong> $departamento</p>
-                <p><strong>🚨 Prioridad:</strong> " . strtoupper($prioridad) . "</p>
+        <div style='font-family: Arial, sans-serif; max-width: 600px; color: #333; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;'>
+            <div style='background-color: #212529; color: white; padding: 15px; text-align: center;'>
+                <h3 style='margin:0;'>Nueva Solicitud</h3>
             </div>
-            
-            <p><a href='http://localhost/sistema_tickets/views/ver_ticket.php?id=$ticket_id'>Ir al Ticket</a></p>
-            <hr>
-            <small>Panel de Supervisión</small>
+            <div style='padding: 20px;'>
+                <p>Se requiere atención para un nuevo ticket.</p>
+                
+                <table style='width: 100%; border-collapse: collapse;'>
+                    <tr><td style='padding: 5px; color: #666;'>Solicitante:</td><td><strong>$usuario_nombre</strong></td></tr>
+                    <tr><td style='padding: 5px; color: #666;'>Departamento:</td><td>$departamento</td></tr>
+                    <tr><td style='padding: 5px; color: #666;'>Prioridad:</td><td><strong style='color: #d63384;'>" . strtoupper($prioridad) . "</strong></td></tr>
+                </table>
+
+                <div style='margin-top: 15px; background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px;'>
+                    <em>\"$descripcion\"</em>
+                </div>
+
+                <p style='margin-top: 20px;'>
+                    <a href='http://localhost/sistema_tickets/views/ver_ticket.php?id=$ticket_id' style='color: #0d6efd; text-decoration: none; font-weight: bold;'>Administrar Ticket &rarr;</a>
+                </p>
+            </div>
         </div>";
 
         enviarCorreo($supervisor_email, 'Supervisor DAC', $asunto_sup, $html_sup);
 
         // ---------------------------------------------------------
-        // 4. REDIRECCIÓN FINAL (¡Esto era lo que faltaba!)
+        // 4. REDIRECCIÓN FINAL (CORREGIDA)
         // ---------------------------------------------------------
-        header("Location: ../views/dashboard.php?mensaje=exito");
+        // Cambiamos 'mensaje=exito' por 'msg=ticket_creado' para que salga la alerta verde
+        header("Location: ../views/dashboard.php?msg=ticket_creado");
         exit;
 
     } catch (PDOException $e) {
-        echo "Error BD: " . $e->getMessage();
+        error_log("Error DB: " . $e->getMessage());
+        header("Location: ../views/dashboard.php?error=db_error");
+        exit;
     }
+} else {
+    header("Location: ../views/dashboard.php");
+    exit;
 }
 ?>
