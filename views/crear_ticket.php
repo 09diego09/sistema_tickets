@@ -26,7 +26,7 @@ if (!isset($_SESSION['usuario_id'])) {
             <div class="card border-0 shadow-sm" style="border-radius: 15px;">
                 <div class="card-body p-4 p-lg-5">
                     
-                    <form action="../actions/crear_ticket.php" method="POST">
+                    <form action="../actions/crear_ticket.php" method="POST" enctype="multipart/form-data">
                         
                         <h6 class="text-primary fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">
                             <i class="bi bi-person-lines-fill me-2"></i>Información del Solicitante
@@ -36,7 +36,6 @@ if (!isset($_SESSION['usuario_id'])) {
                             <div class="col-md-6 mb-3 mb-md-0">
                                 <label class="form-label text-muted small fw-bold">Nombre</label>
                                 <input type="text" class="form-control bg-light border-0" value="<?php echo $_SESSION['usuario_nombre']; ?>" readonly>
-                                <div class="form-text small">El ticket se registrará a tu nombre.</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold">Departamento *</label>
@@ -72,29 +71,32 @@ if (!isset($_SESSION['usuario_id'])) {
                                 <div class="d-flex gap-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="prioridad" value="media" id="prioMedia" checked>
-                                        <label class="form-check-label badge bg-warning bg-opacity-10 text-warning border border-warning px-3 py-1 rounded-pill" style="cursor: pointer;" for="prioMedia">
-                                            Media
-                                        </label>
+                                        <label class="form-check-label badge bg-warning bg-opacity-10 text-warning border border-warning px-3 py-1 rounded-pill" style="cursor: pointer;" for="prioMedia">Media</label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="prioridad" value="alta" id="prioAlta">
-                                        <label class="form-check-label badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-1 rounded-pill" style="cursor: pointer;" for="prioAlta">
-                                            Alta
-                                        </label>
+                                        <label class="form-check-label badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-1 rounded-pill" style="cursor: pointer;" for="prioAlta">Alta</label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="prioridad" value="baja" id="prioBaja">
-                                        <label class="form-check-label badge bg-success bg-opacity-10 text-success border border-success px-3 py-1 rounded-pill" style="cursor: pointer;" for="prioBaja">
-                                            Baja
-                                        </label>
+                                        <label class="form-check-label badge bg-success bg-opacity-10 text-success border border-success px-3 py-1 rounded-pill" style="cursor: pointer;" for="prioBaja">Baja</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label text-muted small fw-bold">Descripción Detallada *</label>
-                            <textarea name="descripcion" class="form-control" rows="5" placeholder="Explica qué sucedió, qué estabas haciendo y si aparece algún error..." required></textarea>
+                            <textarea name="descripcion" class="form-control" rows="5" placeholder="Explica qué sucedió..." required></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold">Adjuntar Evidencia (Opcional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-paperclip text-primary"></i></span>
+                                <input type="file" name="adjunto" class="form-control border-start-0 ps-0" accept="image/png, image/jpeg, application/pdf">
+                            </div>
+                            <div class="form-text small">Formatos: JPG, PNG o PDF. Máx 2MB.</div>
                         </div>
 
                         <div class="d-grid">
@@ -112,7 +114,7 @@ if (!isset($_SESSION['usuario_id'])) {
             <div class="card border-0 shadow-sm mb-4 bg-info bg-opacity-10" style="border-radius: 15px;">
                 <div class="card-body p-4">
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill me-2 text-info"></i>¿Ayuda Inmediata?</h5>
-                    <p class="small text-muted mb-3">Si tu problema detiene la operación crítica de la empresa (ej: servidor caído), llama directamente a soporte.</p>
+                    <p class="small text-muted mb-3">Si tu problema detiene la operación crítica, llama a soporte.</p>
                     <div class="d-flex align-items-center bg-white p-3 rounded shadow-sm">
                         <i class="bi bi-telephone-fill fs-4 text-primary me-3"></i>
                         <div>
@@ -120,30 +122,6 @@ if (!isset($_SESSION['usuario_id'])) {
                             <span class="fw-bold text-dark">+56 9 1234 5678</span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Tiempos de Respuesta</h6>
-                    <ul class="list-unstyled small mb-0">
-                        <li class="d-flex justify-content-between mb-2">
-                            <span><i class="bi bi-circle-fill text-danger me-2" style="font-size: 8px;"></i>Crítica:</span>
-                            <span class="fw-bold">1 - 2 horas</span>
-                        </li>
-                        <li class="d-flex justify-content-between mb-2">
-                            <span><i class="bi bi-circle-fill text-danger me-2" style="font-size: 8px; color: #fd7e14 !important;"></i>Alta:</span>
-                            <span class="fw-bold">4 - 8 horas</span>
-                        </li>
-                        <li class="d-flex justify-content-between mb-2">
-                            <span><i class="bi bi-circle-fill text-warning me-2" style="font-size: 8px;"></i>Media:</span>
-                            <span class="fw-bold">24 horas</span>
-                        </li>
-                        <li class="d-flex justify-content-between">
-                            <span><i class="bi bi-circle-fill text-success me-2" style="font-size: 8px;"></i>Baja:</span>
-                            <span class="fw-bold">48 horas</span>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>

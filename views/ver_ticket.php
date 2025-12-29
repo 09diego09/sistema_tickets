@@ -90,6 +90,28 @@ if ($es_staff) {
                 <div class="card-body p-4">
                     <p class="text-secondary" style="white-space: pre-wrap; line-height: 1.6;"><?php echo htmlspecialchars($ticket['descripcion']); ?></p>
                     
+                    <?php if(!empty($ticket['adjunto'])): ?>
+                        <div class="mt-4 p-3 bg-light border rounded shadow-sm">
+                            <h6 class="fw-bold text-dark small mb-2"><i class="bi bi-paperclip me-1"></i>Archivo Adjunto</h6>
+                            
+                            <?php 
+                                $ext = strtolower(pathinfo($ticket['adjunto'], PATHINFO_EXTENSION));
+                                $ruta_img = "../assets/uploads/" . $ticket['adjunto'];
+                            ?>
+
+                            <?php if(in_array($ext, ['jpg', 'jpeg', 'png'])): ?>
+                                <a href="<?php echo $ruta_img; ?>" target="_blank">
+                                    <img src="<?php echo $ruta_img; ?>" class="img-fluid rounded border bg-white" style="max-height: 300px;" alt="Evidencia">
+                                </a>
+                                <div class="mt-2 small text-muted"><i class="bi bi-zoom-in"></i> Clic para ampliar</div>
+                            <?php else: ?>
+                                <a href="<?php echo $ruta_img; ?>" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill">
+                                    <i class="bi bi-file-earmark-arrow-down-fill me-2"></i>Ver Documento (<?php echo strtoupper($ext); ?>)
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                    
                     <div class="d-flex flex-wrap gap-3 mt-4 pt-3 border-top">
                         <div class="badge bg-light text-muted border px-3 py-2 rounded-pill fw-normal">
                             <i class="bi bi-calendar3 me-2 text-primary"></i>Creado: <strong><?php echo date('d/m/Y H:i', strtotime($ticket['fecha_creacion'])); ?></strong>
