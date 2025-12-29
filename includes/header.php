@@ -228,10 +228,10 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link nav-sub-link py-2" style="font-size: 0.9rem;">
-                                    <i class="bi bi-bar-chart"></i> Estadísticas
-                                </a>
-                            </li>
+    <a href="../views/estadisticas.php" class="nav-link nav-sub-link py-2" style="font-size: 0.9rem;">
+        <i class="bi bi-bar-chart"></i> Estadísticas
+    </a>
+</li>
                         </ul>
                     </div>
                 </li>
