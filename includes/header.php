@@ -25,26 +25,24 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
     /* --- FUENTES Y GENERAL --- */
     body {
         font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-        background-color: #f0f8ff; /* Un fondo azulito muy pálido, tipo "AliceBlue" */
-        color: #334e68; /* Un gris azulado para el texto, menos duro que el negro */
+        background-color: #f0f8ff; /* Un fondo azulito muy pálido */
+        color: #334e68; 
     }
 
-    /* --- BARRA LATERAL (SIDEBAR) CON DEGRADADO --- */
-    /* Reemplazamos el color sólido por el degradado de la marca */
+    /* --- BARRA LATERAL (SIDEBAR) --- */
     .sidebar {
         width: 260px;
         min-height: 100vh;
-        /* El degradado mágico: de celeste cián a azul profundo */
         background: linear-gradient(180deg, #00c6ff 0%, #0072ff 100%);
         color: white;
         position: fixed;
         z-index: 100;
-        box-shadow: 4px 0 15px rgba(0, 198, 255, 0.2); /* Sombra suave celeste */
+        box-shadow: 4px 0 15px rgba(0, 198, 255, 0.2);
     }
 
     .sidebar-header {
         padding: 25px 20px;
-        background: rgba(255, 255, 255, 0.1); /* Blanco semitransparente */
+        background: rgba(255, 255, 255, 0.1);
         font-size: 1.4rem;
         font-weight: bold;
         letter-spacing: 1px;
@@ -56,23 +54,23 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
         padding: 15px 25px;
         font-weight: 500;
         transition: all 0.3s ease;
-        border-right: 4px solid transparent; /* Borde a la derecha para el activo */
+        border-right: 4px solid transparent;
         border-left: none;
     }
 
     .nav-link:hover {
         color: white;
         background: rgba(255, 255, 255, 0.15);
-        padding-left: 30px; /* Pequeño efecto de movimiento a la derecha */
+        padding-left: 30px; 
     }
 
-    /* Enlace activo (Página actual) */
+    /* Enlace activo */
     .nav-link.active {
-        color: #0072ff; /* Azul oscuro para el texto */
-        background: white; /* Fondo blanco puro */
-        border-right-color: #00c6ff; /* Borde celeste vibrante */
+        color: #0072ff; 
+        background: white; 
+        border-right-color: #00c6ff;
         font-weight: 700;
-        box-shadow: -5px 0 15px rgba(0,0,0,0.05); /* Sombra sutil */
+        box-shadow: -5px 0 15px rgba(0,0,0,0.05); 
     }
 
     .nav-link i {
@@ -84,30 +82,24 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
     .content-wrapper {
         margin-left: 260px;
         padding: 40px;
+        background: transparent !important;
     }
 
     /* --- TARJETAS (CARDS) --- */
-  /* --- TARJETAS (CARDS) - ESTILO NUEVO --- */
     .card {
-        border: 1px solid rgba(0, 0, 0, 0.05); /* Un borde casi invisible por defecto */
+        border: 1px solid rgba(0, 0, 0, 0.05); 
         border-radius: 20px; 
-        /* Sombra suave original */
         box-shadow: 0 6px 20px rgba(0, 198, 255, 0.08) !important; 
-        /* Transición suave para el brillo y el borde, SIN movimiento */
         transition: box-shadow 0.3s ease, border-color 0.3s ease;
     }
 
-    /* Efecto "Glow" al pasar el mouse */
+    /* Efecto Glow */
     .row .card:hover {
-        /* Eliminamos el movimiento: transform: translateY(-5px); */
-        
-        /* NUEVO: Hacemos que el borde brille en cian */
         border-color: rgba(0, 198, 255, 0.5);
-        /* NUEVO: Intensificamos la sombra para que parezca luz */
         box-shadow: 0 0 25px rgba(0, 198, 255, 0.3) !important;
     }
+    
     /* --- BOTONES --- */
-    /* Botón Principal (Primary) - Usamos el celeste vibrante */
     .btn-primary {
         background-color: #00c6ff;
         border-color: #00c6ff;
@@ -117,12 +109,11 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
     }
 
     .btn-primary:hover {
-        background-color: #00aadd; /* Un poquito más oscuro al pasar el mouse */
+        background-color: #00aadd; 
         border-color: #00aadd;
         box-shadow: 0 6px 15px rgba(0, 198, 255, 0.4);
     }
 
-    /* Badges (Etiquetas de estado) más modernas */
     .rounded-pill {
         padding-top: 0.5em !important;
         padding-bottom: 0.5em !important;
@@ -130,55 +121,64 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
         letter-spacing: 0.5px;
     }
 
-    /* --- PERFIL DE USUARIO EN BARRA LATERAL --- */
+    /* --- PERFIL DE USUARIO (CORREGIDO) --- */
     .user-panel {
-        background: rgba(0, 0, 0, 0.1);
-        padding: 20px;
+        background: rgba(0, 0, 0, 0.1); /* Fondo sutil para separar el bloque */
+        padding: 20px 25px;
         margin: 0;
+        display: flex; /* Flexbox para alinear icono y texto */
+        align-items: center;
+        gap: 15px; /* Espacio entre icono y texto */
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }
+    
     .user-avatar {
-        background: white;
-        color: #0072ff; /* Icono azul dentro del círculo blanco */
+        /* EL CAMBIO CLAVE: Quitamos el blanco sólido */
+        background: rgba(255, 255, 255, 0.2); /* Blanco transparente */
+        color: white; /* Icono blanco */
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        backdrop-filter: blur(5px); /* Efecto vidrio (opcional, moderno) */
     }
 
-#particles-js {
-        position: fixed; /* Se queda fijo al hacer scroll */
+    #particles-js {
+        position: fixed; 
         width: 100%;
         height: 100%;
         top: 0;
         left: 0;
-        z-index: -1; /* ¡IMPORTANTE! Se va detrás de todo el contenido */
-        /* El color de fondo ya lo definimos en el 'body', las partículas flotarán sobre él */
-    }
-
-    /* Aseguramos que el wrapper del contenido sea transparente para ver el fondo */
-    .content-wrapper {
-        background: transparent !important;
+        z-index: -1; 
     }
 
 </style>
 </head>
 <body>
 
-
     <div id="particles-js"></div>
     <nav class="sidebar">
-<div class="sidebar-header text-center">
-    <img src="../assets/logo_blanco.png" alt="DAC Controls" style="max-width: 80%; height: auto;">
-</div>
+        <div class="sidebar-header text-center">
+            <img src="../assets/logo_blanco.png" alt="DAC Controls" style="max-width: 80%; height: auto; opacity: 0.95;">
+        </div>
 
         <div class="user-panel">
-            <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
+            <div class="user-avatar">
+                <i class="bi bi-person-fill"></i>
+            </div>
             <div class="user-info">
-                <div class="fw-bold small"><?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?></div>
-                <div class="small opacity-75" style="font-size: 0.75rem;">
+                <div class="fw-bold text-white" style="line-height: 1.2;"><?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?></div>
+                <div class="small text-white opacity-75 text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
                     <?php echo ucfirst($rol); ?>
                 </div>
             </div>
         </div>
 
-        <ul class="nav flex-column mt-2">
+        <ul class="nav flex-column mt-3">
             <li class="nav-item">
                 <a href="../views/dashboard.php" class="nav-link">
                     <i class="bi bi-speedometer2"></i> Dashboard
@@ -197,9 +197,9 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
             </li>
 
             <?php if ($rol === 'admin' || $rol === 'tecnico'): ?>
-                <li class="nav-item mt-3">
-                    <div class="text-white opacity-50 small px-3 mb-1 text-uppercase fw-bold" style="font-size: 0.7rem;">
-                        Técnico
+                <li class="nav-item mt-4 mb-2">
+                    <div class="text-white opacity-50 small px-4 text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">
+                        Zona Técnica
                     </div>
                 </li>
                 <li class="nav-item">
@@ -210,8 +210,8 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
             <?php endif; ?>
 
             <?php if ($rol === 'admin'): ?>
-                <li class="nav-item mt-3">
-                    <div class="text-white opacity-50 small px-3 mb-1 text-uppercase fw-bold" style="font-size: 0.7rem;">
+                <li class="nav-item mt-4 mb-2">
+                    <div class="text-white opacity-50 small px-4 text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">
                         Administración
                     </div>
                 </li>
@@ -221,14 +221,14 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
                         <i class="bi bi-gear-fill"></i> Gestión
                     </a>
                     <div class="collapse" id="submenuAdmin">
-                        <ul class="nav flex-column">
+                        <ul class="nav flex-column ps-3 bg-black bg-opacity-10">
                             <li class="nav-item">
-                                <a href="../views/admin_usuarios.php" class="nav-link nav-sub-link">
+                                <a href="../views/admin_usuarios.php" class="nav-link nav-sub-link py-2" style="font-size: 0.9rem;">
                                     <i class="bi bi-people"></i> Usuarios
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link nav-sub-link">
+                                <a href="#" class="nav-link nav-sub-link py-2" style="font-size: 0.9rem;">
                                     <i class="bi bi-bar-chart"></i> Estadísticas
                                 </a>
                             </li>
@@ -237,8 +237,8 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
                 </li>
             <?php endif; ?>
             
-            <li class="nav-item mt-5">
-                <a href="../actions/logout.php" class="nav-link text-danger-emphasis" style="opacity: 0.9;">
+            <li class="nav-item mt-5 pt-3 border-top border-white border-opacity-10">
+                <a href="../actions/logout.php" class="nav-link text-white-50 hover-danger">
                     <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
                 </a>
             </li>
