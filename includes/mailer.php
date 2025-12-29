@@ -20,7 +20,7 @@ function getMailer() {
         // --- TUS CREDENCIALES ---
         $mail->Username   = 'dmc5812@gmail.com'; 
         // ¡OJO! Aquí debe ir la Contraseña de Aplicación de 16 caracteres (sin espacios)
-        $mail->Password   = 'ntrn lekd sukv rlqj'; 
+        $mail->Password   = 'ntrn lekd sukv rñqj'; 
         // ------------------------
 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
