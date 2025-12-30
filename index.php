@@ -162,7 +162,7 @@ if (isset($_SESSION['usuario_id'])) {
                 <button type="submit" class="btn btn-brand">Ingresar al Sistema</button>
             </form>
             
-            <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+            <a href="views/recuperar.php" class="text-decoration-none small text-muted">¿Olvidaste tu contraseña?</a>
         </div>
     </div>
 

@@ -2,7 +2,7 @@
 // actions/agregar_nota.php
 session_start();
 
-// --- MODO DEBUG: Activado para encontrar el error ---
+// --- DEBUG: Activado para encontrar error ---
 //ini_set('display_errors', 1);
 //ini_set('display_startup_errors', 1);
 //error_reporting(E_ALL);
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // 4. ENVIAR LOS CORREOS
             foreach ($destinatarios as $email => $nombre) {
-                // Preparamos el HTML
+             
                 $asunto = "📝 Nueva Nota Interna - Ticket #$ticket_id";
                 
                 $html = <<<HTML

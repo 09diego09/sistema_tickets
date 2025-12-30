@@ -9,8 +9,18 @@ if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'admin') {
     exit;
 }
 
-// 2. OBTENER USUARIOS
-$sql = "SELECT * FROM usuarios ORDER BY nombre ASC";
+// 2. LÓGICA DE FILTRADO (EL INTERRUPTOR)
+// Verificamos si en la URL pidieron ver "todos"
+$ver_todos = isset($_GET['ver']) && $_GET['ver'] === 'todos';
+
+if ($ver_todos) {
+    // Si quiere ver todos: Traemos todo, pero ordenamos primero los ACTIVOS (1) y luego por nombre
+    $sql = "SELECT * FROM usuarios ORDER BY activo DESC, nombre ASC";
+} else {
+    // Por defecto: Solo traemos los que tienen activo = 1
+    $sql = "SELECT * FROM usuarios WHERE activo = 1 ORDER BY nombre ASC";
+}
+
 $stmt = $pdo->query($sql);
 $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -18,10 +28,19 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="container-fluid mb-5">
     
     <div class="row align-items-center mb-4 g-3">
-        <div class="col-md-6">
-            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Gestión de Personal</h3>
-            <p class="text-muted small mb-0 ms-1">Administra accesos y roles del equipo.</p>
-        </div>
+<div class="col-md-6">
+    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Gestión de Personal</h3>
+    <p class="text-muted small mb-2 ms-1">Administra accesos y roles del equipo.</p>
+    
+    <div class="btn-group btn-group-sm ms-1" role="group">
+        <a href="admin_usuarios.php" class="btn <?php echo !$ver_todos ? 'btn-primary' : 'btn-outline-primary'; ?>">
+            Ver Activos
+        </a>
+        <a href="admin_usuarios.php?ver=todos" class="btn <?php echo $ver_todos ? 'btn-primary' : 'btn-outline-primary'; ?>">
+            Ver Todos (Histórico)
+        </a>
+    </div>
+</div>
         <div class="col-md-6 d-flex justify-content-md-end gap-2">
             <div class="input-group shadow-sm" style="max-width: 300px;">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
@@ -55,7 +74,18 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
             ?>
 
-            <div class="col-md-6 col-lg-4 usuario-card" data-nombre="<?php echo strtolower($u['nombre']); ?>" data-email="<?php echo strtolower($u['email']); ?>">
+            <?php 
+    // ... tu lógica de roles ($bg_avatar, etc) sigue igual ...
+    
+    // LÓGICA VISUAL PARA INACTIVOS
+    // Si activo es 0, aplicamos opacidad y escala de grises
+    $estilo_card = ($u['activo'] == 0) ? 'opacity: 0.6; filter: grayscale(1);' : '';
+?>
+
+<div class="col-md-6 col-lg-4 usuario-card" 
+     style="<?php echo $estilo_card; ?>" 
+     data-nombre="<?php echo strtolower($u['nombre']); ?>" 
+     data-email="<?php echo strtolower($u['email']); ?>">
                 <div class="card border-0 shadow-sm h-100 position-relative" style="border-radius: 15px; overflow: hidden; transition: transform 0.2s;">
                     
                     <div class="position-absolute top-0 end-0 m-3">

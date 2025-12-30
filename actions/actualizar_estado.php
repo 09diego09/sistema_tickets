@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($nuevo_estado == 'resuelto') { $color_estado = '#198754'; }     // Verde
         if ($nuevo_estado == 'cerrado') { $color_estado = '#0d6efd'; }      // Azul
 
-        // 4. ENVIAR CORREO AL CLIENTE (Diseño Premium)
+        // 4. ENVIAR CORREO AL CLIENTE (Diseño nuevo)
         if ($ticket_data && !empty($ticket_data['email'])) {
             
             $asunto = "📢 Actualización: Ticket #$ticket_id ahora está " . strtoupper($texto_estado);
