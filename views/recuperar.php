@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         body {
-            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+            background: linear-gradient(135deg, #00c6ff 0%, hsla(213, 100%, 50%, 1.00) 100%);
             height: 100vh;
             display: flex;
             align-items: center;
@@ -29,7 +29,7 @@
 
     <div class="card-recover text-center">
         <div class="mb-4">
-            <img src="D:\XAMPP\htdocs\sistema_tickets\assets\DAC_logo_innovative-negro.png" alt="DAC Controls" style="max-width: 180px;"> 
+          <img src="../assets/DAC_logo_innovative-negro.png" alt="DAC Controls" style="max-width: 180px;">
             </div>
         
         <h4 class="fw-bold text-dark mb-1">¿Olvidaste tu clave?</h4>

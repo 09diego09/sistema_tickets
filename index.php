@@ -12,12 +12,12 @@ if (isset($_SESSION['usuario_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso - Dac-Controls HelpDesk</title>
+    <title>Acceso - Dac-Controls Autoticket</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <style>
-        /* 1. FONDO MÁS OSCURO (Azul Corporativo Profundo) */
+        
         body, html {
             height: 100%;
             margin: 0;
@@ -136,10 +136,9 @@ if (isset($_SESSION['usuario_id'])) {
     <div class="login-wrapper">
         <div class="card-login">
             <div class="mb-2">
-                <i class="bi bi-hdd-network-fill" style="font-size: 2rem; color: #005c99;"></i>
+                <i class="bi bi-hdd-network-fill" style="font-size: 2rem; color: #0077c8;"></i>
             </div>
-            <div class="brand-title">Dac-Controls</div>
-            <div class="brand-subtitle">HelpDesk</div>
+            <img src="assets/DAC_logo_innovative-negro.png" alt="DAC Controls" style="max-width: 200px;">
             <div class="login-instruction">Ingresa tus credenciales</div>
 
             <?php if(isset($_GET['error'])): ?>

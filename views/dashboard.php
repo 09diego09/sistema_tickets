@@ -6,7 +6,7 @@ require '../config/db.php';
 $id_usuario = $_SESSION['usuario_id'];
 $rol_usuario = $_SESSION['usuario_rol'];
 
-// 1. CONSULTA SQL (Mantenemos tu lógica original que funciona bien)
+// CONSULTA SQL (Igual que antes)
 if ($rol_usuario == 'admin' || $rol_usuario == 'tecnico') {
     $sql = "SELECT t.*, u.nombre as creador, a.nombre as agente 
             FROM tickets t 
@@ -28,16 +28,27 @@ if ($rol_usuario == 'admin' || $rol_usuario == 'tecnico') {
 
 $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 2. CÁLCULO DE KPIS
+// 2. CÁLCULO DE KPIS + DATOS PARA GRÁFICO (🔥 MEJORA)
 $total_tickets = count($tickets);
 $total_pendientes = 0;
 $total_resueltos = 0;
 
+// Contadores para el gráfico
+$prioridad_alta = 0;
+$prioridad_media = 0;
+$prioridad_baja = 0;
+
 foreach($tickets as $t) {
+    // KPI General
     if($t['estado'] == 'cerrado') {
         $total_resueltos++;
     } else {
         $total_pendientes++;
+        
+        // Solo contamos prioridades de los pendientes para el gráfico
+        if($t['prioridad'] == 'alta') $prioridad_alta++;
+        elseif($t['prioridad'] == 'media') $prioridad_media++;
+        else $prioridad_baja++;
     }
 }
 ?>
@@ -51,59 +62,99 @@ foreach($tickets as $t) {
         </div>
     <?php endif; ?>
 
-    <div class="mb-4">
-        <h3 class="fw-bold text-dark mb-0"><i class="bi bi-speedometer2 text-primary me-2"></i>Panel de Control</h3>
-        <p class="text-muted small mb-0 ms-1">Resumen de actividad y pendientes.</p>
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-speedometer2 text-primary me-2"></i>Panel de Control</h3>
+            <p class="text-muted small mb-0 ms-1">Bienvenido al sistema, <?php echo $_SESSION['usuario_nombre']; ?></p>
+        </div>
+
     </div>
 
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h3 class="fw-bold mb-0 text-dark"><?php echo $total_tickets; ?></h3>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Total</small>
+        <div class="col-lg-8">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-0 text-dark"><?php echo $total_tickets; ?></h3>
+                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Total Histórico</small>
+                            </div>
+                            <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                                <i class="bi bi-folder2-open fs-4"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
-                        <i class="bi bi-folder2-open fs-4"></i>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-0 text-warning"><?php echo $total_pendientes; ?></h3>
+                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Pendientes</small>
+                            </div>
+                            <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle">
+                                <i class="bi bi-hourglass-split fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-0 text-success"><?php echo $total_resueltos; ?></h3>
+                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Resueltos</small>
+                            </div>
+                            <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle">
+                                <i class="bi bi-check-circle fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 mt-4">
+                    <div class="card border-0 shadow-sm bg-primary text-white" style="border-radius: 15px; background: linear-gradient(45deg, #005c99, #0077c8);">
+                        <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="fw-bold mb-1">¿Tienes un nuevo requerimiento?</h5>
+                                <p class="mb-0 small text-white-50">Estamos listos para ayudarte.</p>
+                            </div>
+                            <a href="crear_ticket.php" class="btn btn-light text-primary fw-bold rounded-pill px-4 shadow-sm">
+                                <i class="bi bi-plus-lg me-1"></i>Crear Ticket
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h3 class="fw-bold mb-0 text-warning"><?php echo $total_pendientes; ?></h3>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Pendientes</small>
-                    </div>
-                    <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle">
-                        <i class="bi bi-hourglass-split fs-4"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h3 class="fw-bold mb-0 text-success"><?php echo $total_resueltos; ?></h3>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Resueltos</small>
-                    </div>
-                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle">
-                        <i class="bi bi-check-circle fs-4"></i>
-                    </div>
+
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted text-uppercase small mb-3">Prioridad de Pendientes</h6>
+                    
+                    <?php if($total_pendientes > 0): ?>
+                        <div style="height: 200px; position: relative;">
+                            <canvas id="chartPrioridad"></canvas>
+                        </div>
+                        <div class="text-center mt-3 small text-muted">
+                            Tickets pendientes por atención
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center py-5 text-muted opacity-50">
+                            <i class="bi bi-pie-chart-fill fs-1"></i>
+                            <p class="mt-2 mb-0">Sin datos para mostrar</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
-            <h5 class="mb-0 fw-bold text-secondary"><i class="bi bi-list-task me-2"></i>Tickets Pendientes</h5>
-            <a href="crear_ticket.php" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
-                <i class="bi bi-plus-lg me-1"></i>Nuevo Ticket
-            </a>
+    <div class="card border-0 shadow-sm mb-5" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="mb-0 fw-bold text-secondary"><i class="bi bi-list-task me-2"></i>Tickets Activos</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -123,58 +174,39 @@ foreach($tickets as $t) {
                         <?php if($total_pendientes > 0): ?>
                             <?php foreach($tickets as $ticket): ?>
                                 <?php if($ticket['estado'] == 'cerrado') continue; ?>
-                                
                                 <tr>
                                     <td class="ps-4 fw-bold text-muted">#<?php echo $ticket['id']; ?></td>
-                                    
                                     <td>
                                         <div class="fw-bold text-dark"><?php echo htmlspecialchars($ticket['titulo']); ?></div>
-                                        <div class="small text-muted">
-                                            <i class="bi bi-building me-1"></i><?php echo htmlspecialchars($ticket['departamento'] ?? 'General'); ?>
-                                        </div>
+                                        <div class="small text-muted"><i class="bi bi-building me-1"></i><?php echo htmlspecialchars($ticket['departamento'] ?? 'General'); ?></div>
                                     </td>
-                                    
                                     <td>
                                         <?php if(!empty($ticket['agente'])): ?>
-                                            <span class="badge bg-info bg-opacity-10 text-info border border-info rounded-pill">
-                                                <i class="bi bi-person-check-fill me-1"></i><?php echo htmlspecialchars($ticket['agente']); ?>
-                                            </span>
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info rounded-pill"><i class="bi bi-person-check-fill me-1"></i><?php echo htmlspecialchars($ticket['agente']); ?></span>
                                         <?php else: ?>
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill">
-                                                Sin Asignar
-                                            </span>
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill">Sin Asignar</span>
                                         <?php endif; ?>
                                     </td>
-
                                     <td>
                                         <?php 
                                             $prio = $ticket['prioridad'];
                                             $classP = ($prio=='alta') ? 'danger' : (($prio=='media') ? 'warning' : 'success');
                                         ?>
-                                        <span class="badge text-<?php echo $classP; ?> border border-<?php echo $classP; ?> rounded-pill px-2">
-                                            <?php echo ucfirst($prio); ?>
-                                        </span>
+                                        <span class="badge text-<?php echo $classP; ?> border border-<?php echo $classP; ?> rounded-pill px-2"><?php echo ucfirst($prio); ?></span>
                                     </td>
-
                                     <td>
                                         <?php 
                                             $est = $ticket['estado'];
-                                            // En dashboard casi siempre será rojo (abierto) o amarillo (proceso)
                                             $classE = ($est=='abierto') ? 'danger' : 'warning';
                                             $iconE  = ($est=='abierto') ? 'bi-exclamation-circle' : 'bi-arrow-repeat';
                                         ?>
                                         <span class="badge bg-<?php echo $classE; ?> bg-opacity-10 text-<?php echo $classE; ?> rounded-pill px-3">
-                                            <i class="bi <?php echo $iconE; ?> me-1 small"></i>
-                                            <?php echo ucfirst(str_replace('_',' ',$est)); ?>
+                                            <i class="bi <?php echo $iconE; ?> me-1 small"></i><?php echo ucfirst(str_replace('_',' ',$est)); ?>
                                         </span>
                                     </td>
-                                    
                                     <td class="text-muted small"><?php echo htmlspecialchars($ticket['creador']); ?></td>
-                                    
                                     <td class="text-end pe-4">
-                                        <a href="ver_ticket.php?id=<?php echo $ticket['id']; ?>" class="btn btn-sm btn-light border text-primary shadow-sm" title="Ver Detalles">
-                                            <i class="bi bi-eye-fill"></i>
-                                        </a>
+                                        <a href="ver_ticket.php?id=<?php echo $ticket['id']; ?>" class="btn btn-sm btn-light border text-primary shadow-sm rounded-circle" style="width: 32px; height: 32px;" title="Ver Detalles"><i class="bi bi-eye-fill"></i></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -192,4 +224,44 @@ foreach($tickets as $t) {
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Solo ejecutamos el gráfico si hay pendientes
+    <?php if($total_pendientes > 0): ?>
+    const ctx = document.getElementById('chartPrioridad');
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Alta', 'Media', 'Baja'],
+            datasets: [{
+                data: [<?php echo $prioridad_alta; ?>, <?php echo $prioridad_media; ?>, <?php echo $prioridad_baja; ?>],
+                backgroundColor: [
+                    '#dc3545', // Alta (Rojo Bootstrap)
+                    '#ffc107', // Media (Amarillo Bootstrap)
+                    '#198754'  // Baja (Verde Bootstrap)
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 10
+                    }
+                }
+            },
+            cutout: '70%', // Hace la dona más fina y elegante
+        }
+    });
+    <?php endif; ?>
+</script>
+
 <?php require '../includes/footer.php'; ?>
