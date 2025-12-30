@@ -9,7 +9,7 @@
           "density": { "enable": true, "value_area": 800 }
         },
         "color": {
-          "value": "#0072ff" /* <--- AQUÍ EL CAMBIO: Color Azul Corporativo */
+          "value": "#0072ff" 
         },
         "shape": {
           "type": "circle",
@@ -26,8 +26,8 @@
         "line_linked": {
           "enable": true,
           "distance": 150,
-          "color": "#0072ff", /* <--- AQUÍ EL CAMBIO: Líneas Azules */
-          "opacity": 0.3,    /* Un poco transparentes para que no molesten al leer */
+          "color": "#0072ff", 
+          "opacity": 0.3,     
           "width": 1
         },
         "move": {
@@ -59,7 +59,7 @@
         // Buscamos todas las alertas en la página
         var alertas = document.querySelectorAll('.alert');
         
-        // Si hay alertas, esperamos 4 segundos (4000 ms) y las cerramos
+        // Si hay alertas, esperamos 2 segundos (2000 ms) y las cerramos
         if (alertas.length > 0) {
             setTimeout(function() {
                 alertas.forEach(function(alerta) {
@@ -67,7 +67,7 @@
                     var bsAlert = new bootstrap.Alert(alerta);
                     bsAlert.close();
                 });
-            }, 2000); // 4000 milisegundos = 4 segundos
+            }, 2000); // 2000 milisegundos = 2 segundos
         }
     });
 </script>

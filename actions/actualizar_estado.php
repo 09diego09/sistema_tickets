@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([':estado' => $nuevo_estado, ':id' => $ticket_id]);
 
         // 2. OBTENER DATOS DEL TICKET (Para el correo)
-        // Necesitamos saber el correo del dueño del ticket y el título
+        // Necesitamos conocer el correo del dueño del ticket y el título
         $sql_info = "SELECT t.titulo, u.email, u.nombre 
                      FROM tickets t 
                      JOIN usuarios u ON t.usuario_id = u.id 

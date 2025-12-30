@@ -1,10 +1,10 @@
 <?php
 // actions/crear_ticket.php
 session_start();
-// Activamos reporte de errores temporalmente para ver si explota algo
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// reporte de errores temporalmente para ver si explota algo
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 1);
+//error_reporting(E_ALL);
 
 require '../config/db.php'; 
 require '../includes/mailer.php'; 

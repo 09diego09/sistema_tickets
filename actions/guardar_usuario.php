@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     ':id' => $id
                 ];
             } else {
-                // Si la dejó en blanco, NO tocamos la contraseña (se mantiene la vieja)
+                // Si queda en blanco, NO tocamos la contraseña (se mantiene la vieja)
                 $sql = "UPDATE usuarios SET nombre = :nom, email = :email, rol = :rol, activo = :act WHERE id = :id";
                 $params = [
                     ':nom' => $nombre, 

@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // 4. Enviar Correo (Diseño Premium)
         $link = "http://localhost/sistema_tickets/views/reset_password.php?token=" . $token;
-        // para prueba de hoy, cambiar 'localhost' por IP (ej: 192.168.1.XX)
+        // para prueba de marcha blanca, cambiar 'localhost' por IP (ej: 192.168.1.XX)
         
         $asunto = "🔐 Recuperación de Contraseña - DAC Controls";
         $html = <<<HTML
