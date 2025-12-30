@@ -28,7 +28,7 @@ Sigue estos pasos para correr el proyecto en tu máquina local:
     ```
 
 2.  **Base de Datos:**
-    * Abre `phpMyAdmin` (http://localhost/phpmyadmin).
+    * Abre `phpMyAdmin` (http://localhost/phpmyadmin). o puedes utilizar mysql Workbench, con eso he trabajado, el phpmyadmin es sugerencia de gemini, la herramienta con la que me estoy apoyando
     * Crea una base de datos llamada `sistema_tickets_db` (o el nombre que prefieras).
     * Importa el archivo SQL ubicado en la carpeta `database/` (si existe) o ejecuta el script de creación.
 
