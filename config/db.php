@@ -24,6 +24,7 @@ try {
 
     // Creamos la instancia PDO
     $pdo = new PDO($dsn, $username, $password, $options);
+    $pdo->exec("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
 
     // Si llegamos aquí, la conexión fue exitosa
     // echo "¡Conexión exitosa a la base de datos!";
