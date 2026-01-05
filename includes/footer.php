@@ -72,6 +72,14 @@
     });
 </script>
 
+<footer class="..."> ... </footer>
+
+    <?php include 'chatbot.php'; ?>
+
+    <script src="..."></script>
+</body>
+</html>
+
 </body> </html>
 </body>
 </html>
