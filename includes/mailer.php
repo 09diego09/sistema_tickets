@@ -28,6 +28,7 @@ function getMailer() {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
+       // $mail->SMTPDebug = 2;
         
         // Usamos las constantes definidas en secrets.php
         $mail->Username   = SMTP_SECURE_EMAIL; 
