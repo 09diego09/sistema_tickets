@@ -60,7 +60,5 @@ Sistema de Mesa de Ayuda (HelpDesk) desarrollado en PHP y MySQL para la gestión
 * `/views`: Las pantallas que ve el usuario (HTML/PHP).
 * `/includes`: Fragmentos de código reutilizables (header, footer).
 
-## ✒️ Autores
-
 ---
 ⌨️ con ❤️ por Diego y Gemini jasjas
