@@ -38,6 +38,11 @@ $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
             <i class="bi bi-exclamation-triangle-fill me-2"></i>La contraseña actual no coincide.
         </div>
     <?php endif; ?>
+    <?php if ($err == 'no_coinciden'): ?>
+        <div class="alert alert-warning border-0 shadow-sm rounded-pill px-4 mb-4">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>Las nuevas contraseñas no coinciden.
+        </div>
+    <?php endif; ?>
 
     <div class="row g-4">
         
@@ -90,6 +95,32 @@ $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-0"><i class="bi bi-envelope"></i></span>
                                     <input type="email" name="email" class="form-control bg-light border-0" value="<?php echo htmlspecialchars($usuario['email']); ?>" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label text-muted small fw-bold text-uppercase">RUT</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-0" style="background-color: #e9ecef;"><i class="bi bi-card-heading"></i></span>
+                                    <input type="text" 
+                                           class="form-control border-0" 
+                                           value="<?php echo htmlspecialchars($usuario['rut_usuarios'] ?? ''); ?>" 
+                                           readonly 
+                                           style="background-color: #e9ecef; cursor: not-allowed; color: #6c757d;">
+                                </div>
+                                <div class="form-text small fst-italic mt-1"><i class="bi bi-lock-fill"></i> Dato no editable.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold text-uppercase">Teléfono de Contacto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-telephone"></i></span>
+                                    <input type="text" 
+                                           name="telefono" 
+                                           class="form-control bg-light border-0" 
+                                           placeholder="+56 9 1234 5678"
+                                           value="<?php echo htmlspecialchars($usuario['tel_usuarios'] ?? ''); ?>">
                                 </div>
                             </div>
                         </div>

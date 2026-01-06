@@ -1,5 +1,5 @@
 <?php
-// sistema_tickets/views/admin_usuarios.php
+// views/admin_usuarios.php
 require '../includes/header.php';
 require '../config/db.php';
 
@@ -9,15 +9,12 @@ if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'admin') {
     exit;
 }
 
-// 2. LÓGICA DE FILTRADO (EL INTERRUPTOR)
-// Verificamos si en la URL pidieron ver "todos"
+// 2. LÓGICA DE FILTRADO
 $ver_todos = isset($_GET['ver']) && $_GET['ver'] === 'todos';
 
 if ($ver_todos) {
-    // Si quiere ver todos: Traemos todo, pero ordenamos primero los ACTIVOS (1) y luego por nombre
     $sql = "SELECT * FROM usuarios ORDER BY activo DESC, nombre ASC";
 } else {
-    // Por defecto: Solo traemos los que tienen activo = 1
     $sql = "SELECT * FROM usuarios WHERE activo = 1 ORDER BY nombre ASC";
 }
 
@@ -28,19 +25,19 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="container-fluid mb-5">
     
     <div class="row align-items-center mb-4 g-3">
-<div class="col-md-6">
-    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Gestión de Personal</h3>
-    <p class="text-muted small mb-2 ms-1">Administra accesos y roles del equipo.</p>
-    
-    <div class="btn-group btn-group-sm ms-1" role="group">
-        <a href="admin_usuarios.php" class="btn <?php echo !$ver_todos ? 'btn-primary' : 'btn-outline-primary'; ?>">
-            Ver Activos
-        </a>
-        <a href="admin_usuarios.php?ver=todos" class="btn <?php echo $ver_todos ? 'btn-primary' : 'btn-outline-primary'; ?>">
-            Ver Todos (Histórico)
-        </a>
-    </div>
-</div>
+        <div class="col-md-6">
+            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Gestión de Personal</h3>
+            <p class="text-muted small mb-2 ms-1">Administra accesos y roles del equipo.</p>
+            
+            <div class="btn-group btn-group-sm ms-1" role="group">
+                <a href="admin_usuarios.php" class="btn <?php echo !$ver_todos ? 'btn-primary' : 'btn-outline-primary'; ?>">
+                    Ver Activos
+                </a>
+                <a href="admin_usuarios.php?ver=todos" class="btn <?php echo $ver_todos ? 'btn-primary' : 'btn-outline-primary'; ?>">
+                    Ver Todos (Histórico)
+                </a>
+            </div>
+        </div>
         <div class="col-md-6 d-flex justify-content-md-end gap-2">
             <div class="input-group shadow-sm" style="max-width: 300px;">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
@@ -56,7 +53,7 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="row g-4" id="contenedorUsuarios">
         <?php foreach($usuarios as $u): ?>
             <?php 
-                // Definir estilos según rol
+                // Estilos según rol
                 $rol = strtolower(trim($u['rol']));
                 $bg_avatar = 'secondary';
                 $badge_class = 'secondary';
@@ -72,20 +69,16 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $badge_class = 'primary'; 
                     $icono = 'bi-tools';
                 }
+
+                // Estilos para inactivos
+                $estilo_card = ($u['activo'] == 0) ? 'opacity: 0.6; filter: grayscale(1);' : '';
             ?>
 
-            <?php 
-    // ... tu lógica de roles ($bg_avatar, etc) sigue igual ...
-    
-    // LÓGICA VISUAL PARA INACTIVOS
-    // Si activo es 0, aplicamos opacidad y escala de grises
-    $estilo_card = ($u['activo'] == 0) ? 'opacity: 0.6; filter: grayscale(1);' : '';
-?>
-
-<div class="col-md-6 col-lg-4 usuario-card" 
-     style="<?php echo $estilo_card; ?>" 
-     data-nombre="<?php echo strtolower($u['nombre']); ?>" 
-     data-email="<?php echo strtolower($u['email']); ?>">
+            <div class="col-md-6 col-lg-4 usuario-card" 
+                 style="<?php echo $estilo_card; ?>" 
+                 data-nombre="<?php echo strtolower($u['nombre']); ?>" 
+                 data-email="<?php echo strtolower($u['email']); ?>">
+                
                 <div class="card border-0 shadow-sm h-100 position-relative" style="border-radius: 15px; overflow: hidden; transition: transform 0.2s;">
                     
                     <div class="position-absolute top-0 end-0 m-3">
@@ -101,7 +94,7 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <i class="bi <?php echo $icono; ?>"></i>
                         </div>
                         
-                        <div class="ms-3 w-100 overflow-hidden">
+                        <div class="ms-3 w-100 overflow-hidden pe-5">
                             <h6 class="fw-bold text-dark mb-0 text-truncate"><?php echo htmlspecialchars($u['nombre']); ?></h6>
                             <small class="text-muted d-block text-truncate mb-2"><?php echo htmlspecialchars($u['email']); ?></small>
                             
@@ -175,6 +168,28 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     </div>
 
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <label class="form-label fw-bold small text-muted text-uppercase">RUT</label>
+        <div class="input-group">
+            <span class="input-group-text bg-light border-0"><i class="bi bi-card-heading text-secondary"></i></span>
+            
+            <input type="text" 
+                   name="rut" 
+                   id="rut" 
+                   class="form-control bg-light border-0" 
+                   placeholder="12.345.678-9">
+        </div>
+        </div>
+
+    <div class="col-md-6">
+        <label class="form-label fw-bold small text-muted text-uppercase">Teléfono</label>
+        <div class="input-group">
+            <span class="input-group-text bg-light border-0"><i class="bi bi-telephone text-secondary"></i></span>
+            <input type="text" name="telefono" id="telefono" class="form-control bg-light border-0" placeholder="+56 9...">
+        </div>
+    </div>
+</div>
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted text-uppercase">Rol</label>
@@ -225,6 +240,7 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             if (nombre.includes(input) || email.includes(input)) {
                 tarjetas[i].classList.remove('d-none');
+                tarjetas[i].parentElement.classList.remove('d-none'); // Aseguramos mostrar la columna
                 hayResultados = true;
             } else {
                 tarjetas[i].classList.add('d-none');
@@ -244,6 +260,11 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         document.getElementById('usuario_id').value = ''; 
         document.getElementById('nombre').value = '';
         document.getElementById('email').value = '';
+        
+        // NUEVO: Limpiar RUT y Teléfono
+        document.getElementById('rut').value = ''; 
+        document.getElementById('telefono').value = '';
+
         document.getElementById('rol').value = 'usuario';
         document.getElementById('activo').value = '1';
         
@@ -259,6 +280,12 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         document.getElementById('usuario_id').value = usuario.id; 
         document.getElementById('nombre').value = usuario.nombre;
         document.getElementById('email').value = usuario.email;
+
+        // ✅ NUEVO: Cargar RUT y Teléfono desde la base de datos (Tu código)
+        // Usamos || '' para evitar que escriba "undefined" o "null" si están vacíos
+        document.getElementById('rut').value = usuario.rut_usuarios || ''; 
+        document.getElementById('telefono').value = usuario.tel_usuarios || '';
+
         document.getElementById('rol').value = usuario.rol; 
         document.getElementById('activo').value = usuario.activo;
 
