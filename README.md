@@ -22,7 +22,7 @@ Este es un sistema web desarrollado para la gestión, seguimiento y resolución 
 
 Sistema de Mesa de Ayuda (HelpDesk) desarrollado en PHP y MySQL para la gestión centralizada de incidentes técnicos y soporte TI.
 
-![Estado del Proyecto](https://img.shields.io/badge/Estado-Terminado-success)
+![Estado del Proyecto](https://img.shields.io/badge/Estado-EnProceso-success)
 ![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4)
 ![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1)
 
