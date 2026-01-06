@@ -18,14 +18,27 @@ Este es un sistema web desarrollado para la gestión, seguimiento y resolución 
 
 ## ⚙️ Instalación y Configuración
 
-Sigue estos pasos para correr el proyecto en tu máquina local:
+# 🎫 Sistema de Tickets - DAC Controls HelpDesk
 
-1.  **Clonar el repositorio:**
-    Descarga este proyecto dentro de tu carpeta `htdocs` en XAMPP.
-    ```bash
-    cd "D:\XAMPP\htdocs"
-    git clone [https://github.com/09diego09/sistema_tickets.git](https://github.com/09diego09/sistema_tickets.git)
-    ```
+Sistema de Mesa de Ayuda (HelpDesk) desarrollado en PHP y MySQL para la gestión centralizada de incidentes técnicos y soporte TI.
+
+![Estado del Proyecto](https://img.shields.io/badge/Estado-EnProceso-success)
+![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4)
+![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1)
+
+## 📋 Características
+
+- **Roles de Usuario:** Sistema de permisos para Administradores, Técnicos y Usuarios finales.
+- **Gestión de Tickets:** Ciclo de vida completo (Abierto, En Proceso, Resuelto).
+- **Notificaciones SMTP:** Envío automático de correos electrónicos al actualizar tickets.
+- **Archivos Adjuntos:** Soporte para evidencias en imágenes y PDF.
+- **Dashboard:** Gráficos estadísticos en tiempo real.
+
+## 🚀 Instalación
+
+1. Clonar el repositorio en `htdocs`:
+   ```bash
+   git clone [https://github.com/TU_USUARIO/sistema_tickets.git](https://github.com/TU_USUARIO/sistema_tickets.git)
 
 2.  **Base de Datos:**
     * Abre `phpMyAdmin` (http://localhost/phpmyadmin). o puedes utilizar mysql Workbench, con eso he trabajado, el phpmyadmin es sugerencia de gemini, la herramienta con la que me estoy apoyando
@@ -46,10 +59,6 @@ Sigue estos pasos para correr el proyecto en tu máquina local:
 * `/config`: Archivos de conexión a la base de datos.
 * `/views`: Las pantallas que ve el usuario (HTML/PHP).
 * `/includes`: Fragmentos de código reutilizables (header, footer).
-
-## ✒️ Autores
-
-* **[Tu Nombre Completo]** - *Desarrollo Inicial* - [TuUsuarioDeGitHub]
 
 ---
 ⌨️ con ❤️ por Diego y Gemini jasjas
