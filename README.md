@@ -62,7 +62,5 @@ Sistema de Mesa de Ayuda (HelpDesk) desarrollado en PHP y MySQL para la gestión
 
 ## ✒️ Autores
 
-* **[Tu Nombre Completo]** - *Desarrollo Inicial* - [TuUsuarioDeGitHub]
-
 ---
 ⌨️ con ❤️ por Diego y Gemini jasjas
