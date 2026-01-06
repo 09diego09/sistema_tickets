@@ -8,7 +8,7 @@
 $host = '127.0.0.1';
 $dbname = 'sistema_tickets';
 $username = 'root';
-$password = '1234'; // En XAMPP la contraseña de root suele estar vacía
+$password = ''; // En XAMPP la contraseña de root suele estar vacía
 $port = '3306'; // (Agrega esto al DSN)
 
 try {
