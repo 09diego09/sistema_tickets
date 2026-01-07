@@ -38,13 +38,33 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
     /* --- BARRA LATERAL (SIDEBAR) --- */
     .sidebar {
         width: 260px;
-        min-height: 100vh;
+        height: 100vh; /* CAMBIO: Altura fija para permitir scroll interno */
+        overflow-y: auto; /* CAMBIO: Scroll automático si falta espacio */
         background: linear-gradient(180deg, #00c6ff 0%, #0072ff 100%);
         color: white;
         position: fixed;
         z-index: 1050; /* Por encima de todo */
         box-shadow: 4px 0 15px rgba(0, 198, 255, 0.2);
         transition: all 0.3s ease; /* Animación suave al entrar/salir */
+        
+        /* Flexbox para ordenar contenido */
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --- SCROLLBAR PERSONALIZADO (FINO Y ELEGANTE) --- */
+    .sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.5);
     }
 
     .sidebar-header {
@@ -53,6 +73,7 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
         font-size: 1.4rem;
         font-weight: bold;
         letter-spacing: 1px;
+        flex-shrink: 0; /* Evita que el header se achique */
     }
 
     /* --- ENLACES DEL MENÚ --- */
@@ -171,6 +192,7 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
         align-items: center;
         gap: 15px; 
         border-bottom: 1px solid rgba(255,255,255,0.1);
+        flex-shrink: 0; /* Evita que el panel de usuario se encoja */
     }
     .user-avatar {
         background: rgba(255, 255, 255, 0.2); 
@@ -233,6 +255,11 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
                 </a>
             </li>
             <li class="nav-item">
+                <a href="../views/mis_tareas.php" class="nav-link">
+                    <i class="bi bi-check2-square me-2"></i> Mis Tareas
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="../views/mis_tickets.php?view=personal" class="nav-link">
                     <i class="bi bi-person-workspace"></i> Mis Solicitudes
                 </a>
@@ -279,7 +306,7 @@ $rol = $_SESSION['usuario_rol'] ?? 'usuario';
                 </li>
             <?php endif; ?>
             
-            <li class="nav-item mt-5 pt-3 border-top border-white border-opacity-10">
+            <li class="nav-item mt-auto pt-3 border-top border-white border-opacity-10 pb-3">
                 <a href="../actions/logout.php" class="nav-link text-white-50 hover-danger">
                     <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
                 </a>

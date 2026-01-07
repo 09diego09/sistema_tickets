@@ -20,6 +20,15 @@ $sql = "SELECT t.*, u.nombre as creador, u.email as email_creador
 $stmt = $pdo->prepare($sql);
 $stmt->execute([':id' => $id_ticket]);
 $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmtCheck = $pdo->prepare("SELECT * FROM ticket_checklist WHERE ticket_id = :id ORDER BY id ASC");
+$stmtCheck->execute([':id' => $id_ticket]); // Asegúrate de usar tu variable de ID del ticket
+$checklist = $stmtCheck->fetchAll(PDO::FETCH_ASSOC);
+
+// Calcular progreso
+$total_tareas = count($checklist);
+$completadas = 0;
+foreach($checklist as $c) { if($c['completado']) $completadas++; }
+$porcentaje = ($total_tareas > 0) ? round(($completadas / $total_tareas) * 100) : 0;
 
 if (!$ticket) {
     header("Location: dashboard.php?error=no_encontrado");
@@ -89,6 +98,46 @@ if ($es_staff) {
                 </div>
                 <div class="card-body p-4">
                     <p class="text-secondary" style="white-space: pre-wrap; line-height: 1.6;"><?php echo htmlspecialchars($ticket['descripcion']); ?></p>
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-list-check me-2 text-primary"></i>Lista de Tareas</h6>
+        <span class="badge bg-light text-primary border" id="progress-text"><?php echo $porcentaje; ?>% Completado</span>
+    </div>
+    
+    <div class="card-body px-4">
+        <div class="progress mb-3" style="height: 6px;">
+            <div class="progress-bar bg-success" id="progress-bar" role="progressbar" style="width: <?php echo $porcentaje; ?>%"></div>
+        </div>
+
+        <div id="lista-checklist" class="mb-3">
+            <?php foreach($checklist as $item): ?>
+                <div class="d-flex align-items-center mb-2 p-2 rounded hover-item" id="item-<?php echo $item['id']; ?>" style="background-color: #f8f9fa;">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input check-tarea" type="checkbox" 
+                               value="<?php echo $item['id']; ?>" 
+                               <?php echo $item['completado'] ? 'checked' : ''; ?>
+                               style="cursor: pointer; transform: scale(1.2);">
+                    </div>
+                    <span class="ms-3 flex-grow-1 <?php echo $item['completado'] ? 'text-decoration-line-through text-muted' : ''; ?>" id="text-<?php echo $item['id']; ?>">
+                        <?php echo htmlspecialchars($item['titulo_tarea']); ?>
+                    </span>
+                    <?php if($_SESSION['usuario_rol'] != 'usuario'): // Solo técnicos/admins borran ?>
+                    <button class="btn btn-sm text-danger btn-eliminar-tarea" data-id="<?php echo $item['id']; ?>">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <?php if($ticket['estado'] != 'resuelto' && ($_SESSION['usuario_rol'] == 'admin' || $_SESSION['usuario_rol'] == 'tecnico')): ?>
+        <div class="input-group">
+            <input type="text" id="nuevo-item" class="form-control" placeholder="Agregar nueva tarea..." onkeypress="if(event.key === 'Enter') agregarTarea()">
+            <button class="btn btn-primary" type="button" onclick="agregarTarea()"><i class="bi bi-plus-lg"></i></button>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
                     
                     <?php if(!empty($ticket['adjunto'])): ?>
                         <div class="mt-4 p-3 bg-light border rounded shadow-sm">
@@ -247,5 +296,64 @@ if ($es_staff) {
         </div>
     </div>
 </div>
+<script>
+const TICKET_ID = <?php echo $id_ticket; ?>; // Asegúrate que esta variable PHP exista
 
+// 1. AGREGAR TAREA
+async function agregarTarea() {
+    const input = document.getElementById('nuevo-item');
+    const texto = input.value.trim();
+    if(!texto) return;
+
+    const res = await fetch('../actions/checklist_acciones.php', {
+        method: 'POST',
+        body: JSON.stringify({ accion: 'agregar', ticket_id: TICKET_ID, tarea: texto })
+    });
+    const data = await res.json();
+
+    if(data.status === 'ok') {
+        // Recargar la página para ver cambios (o podrías insertar el HTML con JS para hacerlo más pro)
+        location.reload(); 
+    }
+}
+
+// 2. MARCAR / DESMARCAR (Detectar clics en checkboxes)
+document.querySelectorAll('.check-tarea').forEach(chk => {
+    chk.addEventListener('change', async function() {
+        const id = this.value;
+        const estado = this.checked ? 1 : 0;
+        
+        // Efecto visual inmediato
+        const textoSpan = document.getElementById('text-' + id);
+        if(this.checked) {
+            textoSpan.classList.add('text-decoration-line-through', 'text-muted');
+        } else {
+            textoSpan.classList.remove('text-decoration-line-through', 'text-muted');
+        }
+
+        // Enviar al backend
+        await fetch('../actions/checklist_acciones.php', {
+            method: 'POST',
+            body: JSON.stringify({ accion: 'toggle', item_id: id, estado: estado })
+        });
+        
+        // Opcional: Recargar para actualizar la barra de progreso
+        location.reload();
+    });
+});
+
+// 3. ELIMINAR TAREA
+document.querySelectorAll('.btn-eliminar-tarea').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        if(!confirm('¿Borrar esta tarea?')) return;
+        const id = this.dataset.id;
+        
+        await fetch('../actions/checklist_acciones.php', {
+            method: 'POST',
+            body: JSON.stringify({ accion: 'eliminar', item_id: id })
+        });
+        location.reload();
+    });
+});
+</script>
 <?php require '../includes/footer.php'; ?>
