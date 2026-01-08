@@ -1,55 +1,69 @@
 <?php
 // actions/crear_ticket.php
 session_start();
-// reporte de errores temporalmente para ver si explota algo
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
 
 require '../config/db.php'; 
 require '../includes/mailer.php'; 
 
-// Función auxiliar para colores
+// Función para darle color a la prioridad en el correo
 if (!function_exists('getColorPrioridad')) {
     function getColorPrioridad($prio) {
-        if ($prio == 'alta') return '#dc3545';
-        if ($prio == 'media') return '#ffc107';
-        return '#198754';
+        if ($prio == 'alta') return '#dc3545'; // Rojo
+        if ($prio == 'media') return '#ffc107'; // Amarillo
+        return '#198754'; // Verde
     }
 }
 
+// Solo procesamos si el formulario fue enviado
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.php"); exit; }
+    // Si no está logueado, lo sacamos
+    if (!isset($_SESSION['usuario_id'])) { 
+        header("Location: ../index.php"); 
+        exit; 
+    }
 
-    $usuario_id = $_SESSION['usuario_id'];
+    $usuario_id     = $_SESSION['usuario_id'];
     $usuario_nombre = $_SESSION['usuario_nombre'] ?? 'Usuario';
 
+    // Limpiamos los datos de entrada
     $titulo       = trim($_POST['titulo']);
     $descripcion  = trim($_POST['descripcion']);
     $prioridad    = $_POST['prioridad'];
     $departamento = $_POST['departamento'];
     
-    // 1. SUBIDA DE ARCHIVOS
+    // ---------------------------------------------------------
+    // 1. SUBIDA DE ARCHIVOS (Adjuntos)
+    // ---------------------------------------------------------
     $nombre_archivo = null; 
     if (isset($_FILES['adjunto']) && $_FILES['adjunto']['error'] == 0) {
         $directorio_destino = "../assets/uploads/";
-        if (!is_dir($directorio_destino)) { mkdir($directorio_destino, 0777, true); } // Crear carpeta si no existe
+        
+        // Si la carpeta no existe, la creamos con permisos
+        if (!is_dir($directorio_destino)) { 
+            mkdir($directorio_destino, 0777, true); 
+        } 
 
         $archivo_info = pathinfo($_FILES['adjunto']['name']);
-        $extension = strtolower($archivo_info['extension']);
-        $permitidos = ['jpg', 'jpeg', 'png', 'pdf'];
+        $extension    = strtolower($archivo_info['extension']);
+        $permitidos   = ['jpg', 'jpeg', 'png', 'pdf'];
 
+        // Solo permitimos imágenes y PDFs
         if (in_array($extension, $permitidos)) {
+            // Nombre único para evitar sobreescritura (timestamp + nombre limpio)
             $nombre_archivo = time() . "_" . preg_replace("/[^a-zA-Z0-9.]/", "", $archivo_info['basename']);
+            
             if (!move_uploaded_file($_FILES['adjunto']['tmp_name'], $directorio_destino . $nombre_archivo)) {
-                $nombre_archivo = null; 
+                $nombre_archivo = null; // Si falla la subida, guardamos null
             }
         }
     }
 
     try {
-        // 2. LOGICA DE ASIGNACIÓN
+        // ---------------------------------------------------------
+        // 2. LÓGICA DE ASIGNACIÓN AUTOMÁTICA (Balanceo de Carga)
+        // ---------------------------------------------------------
+        // Buscamos al técnico con MENOS tickets abiertos para asignarle este nuevo
         $sql_asignacion = "
             SELECT u.id, u.nombre, COUNT(t.id) as carga_trabajo
             FROM usuarios u
@@ -62,10 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt_tecnico = $pdo->query($sql_asignacion);
         $tecnico_asignado = $stmt_tecnico->fetch();
 
-        $agente_id = $tecnico_asignado ? $tecnico_asignado['id'] : null;
+        $agente_id      = $tecnico_asignado ? $tecnico_asignado['id'] : null;
         $nombre_tecnico = $tecnico_asignado ? $tecnico_asignado['nombre'] : 'Por Asignar';
 
-        // 3. GUARDAR TICKET
+        // ---------------------------------------------------------
+        // 3. GUARDAR TICKET EN BASE DE DATOS
+        // ---------------------------------------------------------
         $sql = "INSERT INTO tickets (usuario_id, agente_id, titulo, descripcion, prioridad, departamento, adjunto, estado, fecha_creacion) 
                 VALUES (:usuario_id, :agente_id, :titulo, :descripcion, :prioridad, :departamento, :adjunto, 'abierto', NOW())";
         
@@ -80,17 +96,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             ':adjunto'      => $nombre_archivo
         ]);
 
-        $ticket_id = $pdo->lastInsertId(); 
+        $ticket_id = $pdo->lastInsertId(); // Obtenemos el ID del ticket recién creado
 
-        // 4. ENVÍO DE CORREOS (Con bloque Try-Catch independiente)
+        // ---------------------------------------------------------
+        // 4. ENVÍO DE CORREOS
+        // ---------------------------------------------------------
         try {
-            // Estilos Corporativos
-            $bg_app = "#f0f8ff"; 
+            // Estilos para el correo
+            $bg_app        = "#f0f8ff"; 
             $color_primary = "#0072ff"; 
-            $color_text = "#334e68";
-            $color_prio = getColorPrioridad($prioridad);
+            $color_text    = "#334e68";
+            $color_prio    = getColorPrioridad($prioridad);
+            // URL base para los links (ajustar si se sube a prod)
+            $base_url      = "http://localhost/sistema_tickets/views/ver_ticket.php?id=$ticket_id";
 
-            // A) CORREO CLIENTE (Usando HEREDOC para evitar errores de comillas)
+            // A) CORREO AL CLIENTE (Confirmación)
             $stmt_u = $pdo->prepare("SELECT email FROM usuarios WHERE id = :id");
             $stmt_u->execute([':id' => $usuario_id]);
             $user_data = $stmt_u->fetch();
@@ -98,7 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($user_data && !empty($user_data['email'])) {
                 $asunto = "✔ Ticket #$ticket_id Recibido - DAC Controls";
                 
-                // HTML SEGURO
                 $html = <<<HTML
                 <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: $bg_app; padding: 40px 0; color: $color_text;">
                     <div style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden;">
@@ -108,13 +127,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                         <div style="padding: 40px 30px;">
                             <h2 style="color: $color_text; margin-top: 0;">Hola, $usuario_nombre 👋</h2>
-                            <p>Tu solicitud ha sido ingresada. Detalles del registro:</p>
+                            <p>Tu solicitud ha sido ingresada correctamente.</p>
                             <div style="background-color: #f0f4f8; border-radius: 15px; padding: 20px; margin: 25px 0;">
                                 <p style="margin:5px 0;"><strong>Asunto:</strong> $titulo</p>
-                                <p style="margin:5px 0;"><strong>Técnico:</strong> $nombre_tecnico</p>
+                                <p style="margin:5px 0;"><strong>Técnico Asignado:</strong> $nombre_tecnico</p>
                             </div>
                             <center>
-                                <a href="http://localhost/sistema_tickets/views/ver_ticket.php?id=$ticket_id" style="display: inline-block; background-color: $color_primary; color: #ffffff; padding: 12px 35px; border-radius: 50px; text-decoration: none; font-weight: bold;">Ver Ticket</a>
+                                <a href="$base_url" style="display: inline-block; background-color: $color_primary; color: #ffffff; padding: 12px 35px; border-radius: 50px; text-decoration: none; font-weight: bold;">Ver Ticket</a>
                             </center>
                         </div>
                     </div>
@@ -123,10 +142,10 @@ HTML;
                 enviarCorreo($user_data['email'], $usuario_nombre, $asunto, $html);
             }
 
-            // B) CORREO SUPERVISOR
+            // B) CORREO AL SUPERVISOR (Notificación)
             $supervisor_email = 'diegomolina@dac-controls.com';
-            $asunto_sup = "🔔 Nuevo Ticket #$ticket_id | $departamento";
-            $aviso_adjunto = $nombre_archivo ? '<div style="color:#0072ff; font-weight:bold; margin-top:10px;">📎 Archivo Adjunto</div>' : '';
+            $asunto_sup       = "🔔 Nuevo Ticket #$ticket_id | $departamento";
+            $aviso_adjunto    = $nombre_archivo ? '<div style="color:#0072ff; font-weight:bold; margin-top:10px;">📎 Archivo Adjunto</div>' : '';
 
             $html_sup = <<<HTML
             <div style="font-family: Arial, sans-serif; background-color: $bg_app; padding: 40px 0;">
@@ -148,7 +167,7 @@ HTML;
                             $aviso_adjunto
                         </div>
                         <center style="margin-top:30px;">
-                            <a href="http://localhost/sistema_tickets/views/ver_ticket.php?id=$ticket_id" style="display:inline-block; background-color:#334e68; color:white; padding:10px 30px; border-radius:50px; text-decoration:none;">Gestionar</a>
+                            <a href="$base_url" style="display:inline-block; background-color:#334e68; color:white; padding:10px 30px; border-radius:50px; text-decoration:none;">Gestionar</a>
                         </center>
                     </div>
                 </div>
@@ -157,14 +176,16 @@ HTML;
             enviarCorreo($supervisor_email, 'Supervisor DAC', $asunto_sup, $html_sup);
 
         } catch (Exception $e) {
-            // Si falla el correo, NO detenemos el sistema, solo lo registramos en el log
+            // Si el correo falla, no importa, el ticket ya se guardó.
             error_log("Error enviando correo: " . $e->getMessage());
         }
 
+        // Redirigimos al Dashboard con mensaje de éxito
         header("Location: ../views/dashboard.php?msg=ticket_creado");
         exit;
 
     } catch (PDOException $e) {
+        // Error de Base de Datos grave
         error_log("Error BD: " . $e->getMessage());
         header("Location: ../views/dashboard.php?error=db_error");
         exit;

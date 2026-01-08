@@ -1,91 +1,92 @@
 <?php
 // actions/actualizar_estado.php
 session_start();
+
+// 1. Configuración
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 require '../config/db.php';
 require '../includes/mailer.php';
 
-// Validar sesión
-if (!isset($_SESSION['usuario_id']) || !in_array($_SESSION['usuario_rol'], ['admin', 'tecnico'])) {
+// Seguridad: Solo Staff
+if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] == 'usuario') {
     header("Location: ../index.php");
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $ticket_id = $_POST['ticket_id'];
+    $ticket_id    = $_POST['ticket_id'];
     $nuevo_estado = $_POST['estado'];
-    $usuario_nombre = $_SESSION['usuario_nombre'];
+    $mi_nombre    = $_SESSION['usuario_nombre'];
 
     try {
-        // 1. ACTUALIZAR EN BD
-        $sql = "UPDATE tickets SET estado = :estado WHERE id = :id";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([':estado' => $nuevo_estado, ':id' => $ticket_id]);
+        // A) Actualizar BD
+        $stmt = $pdo->prepare("UPDATE tickets SET estado = :est WHERE id = :id");
+        $stmt->execute([':est' => $nuevo_estado, ':id' => $ticket_id]);
 
-        // 2. OBTENER DATOS DEL TICKET (Para el correo)
-        // Necesitamos conocer el correo del dueño del ticket y el título
-        $sql_info = "SELECT t.titulo, u.email, u.nombre 
-                     FROM tickets t 
-                     JOIN usuarios u ON t.usuario_id = u.id 
-                     WHERE t.id = :id";
-        $stmt_info = $pdo->prepare($sql_info);
-        $stmt_info->execute([':id' => $ticket_id]);
-        $ticket_data = $stmt_info->fetch();
-
-        // 3. PREPARAR ESTILOS VISUALES (Colores según estado)
-        $color_estado = '#6c757d'; // Gris por defecto
-        $texto_estado = ucfirst(str_replace('_', ' ', $nuevo_estado));
-        
-        if ($nuevo_estado == 'abierto') { $color_estado = '#dc3545'; }      // Rojo
-        if ($nuevo_estado == 'en_proceso') { $color_estado = '#ffc107'; }   // Amarillo
-        if ($nuevo_estado == 'resuelto') { $color_estado = '#198754'; }     // Verde
-        if ($nuevo_estado == 'cerrado') { $color_estado = '#0d6efd'; }      // Azul
-
-        // 4. ENVIAR CORREO AL CLIENTE (Diseño nuevo)
-        if ($ticket_data && !empty($ticket_data['email'])) {
+        // B) Notificar al DUEÑO DEL TICKET (El cliente/usuario)
+        if ($nuevo_estado == 'resuelto' || $nuevo_estado == 'cerrado') {
             
-            $asunto = "📢 Actualización: Ticket #$ticket_id ahora está " . strtoupper($texto_estado);
-            
-            // HTML HEREDOC (Seguro y Limpio)
-            $html = <<<HTML
-            <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f8ff; padding: 40px 0; color: #334e68;">
-                <div style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border-top: 6px solid $color_estado;">
-                    
-                    <div style="background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%); padding: 30px; text-align: center; border-bottom: 1px solid #f0f4f8;">
-                        <p style="color: #829ab1; font-size: 12px; text-transform: uppercase; font-weight: bold; margin: 0;">Actualización de Ticket</p>
-                        <h1 style="color: $color_estado; margin: 10px 0 0; font-size: 28px;">$texto_estado</h1>
-                    </div>
+            // 1. Buscamos datos del dueño
+            $sqlOwner = "SELECT u.email, u.nombre, t.titulo 
+                         FROM tickets t 
+                         JOIN usuarios u ON t.usuario_id = u.id 
+                         WHERE t.id = :id";
+            $stmtOwner = $pdo->prepare($sqlOwner);
+            $stmtOwner->execute([':id' => $ticket_id]);
+            $owner = $stmtOwner->fetch(PDO::FETCH_ASSOC);
 
-                    <div style="padding: 40px 30px;">
-                        <h2 style="color: #334e68; margin-top: 0; font-size: 20px;">Hola, {$ticket_data['nombre']}</h2>
-                        <p style="font-size: 16px; line-height: 1.6;">El estado de tu solicitud ha cambiado.</p>
-                        
-                        <div style="background-color: #f0f4f8; border-radius: 12px; padding: 20px; margin: 25px 0;">
-                            <p style="margin: 5px 0; color: #627d98; font-size: 14px;">Ticket ID: <strong>#$ticket_id</strong></p>
-                            <p style="margin: 5px 0; color: #334e68; font-size: 16px; font-weight: bold;">{$ticket_data['titulo']}</p>
-                            <p style="margin: 15px 0 0; font-size: 13px; color: #829ab1;">Modificado por: $usuario_nombre</p>
+            // 2. Enviamos el correo
+            if ($owner && !empty($owner['email'])) {
+                
+                // --- CORRECCIÓN AQUÍ ---
+                // Calculamos el texto bonito ANTES de meterlo al HTML
+                $estado_legible = ucfirst(str_replace('_', ' ', $nuevo_estado));
+                // -----------------------
+
+                $asunto = "✅ Ticket #$ticket_id Actualizado: " . $estado_legible;
+                
+                // Estilos visuales
+                $bg_app        = "#f0f8ff"; 
+                $color_primary = "#198754"; // Verde éxito
+                $color_text    = "#334e68";
+                // Ajusta esta URL a tu dominio real si ya está en internet
+                $link_ticket   = "http://localhost/sistema_tickets/views/ver_ticket.php?id=$ticket_id";
+
+                $html = <<<HTML
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: $bg_app; padding: 40px 0; color: $color_text;">
+                    <div style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border-top: 6px solid $color_primary;">
+                        <div style="padding: 30px; text-align: center; border-bottom: 1px solid #f0f4f8;">
+                            <h2 style="margin: 0; color: $color_text;">Estado Actualizado</h2>
                         </div>
+                        <div style="padding: 30px;">
+                            <p style="font-size: 16px;">Hola <strong>{$owner['nombre']}</strong>,</p>
+                            <p>Te informamos que tu ticket ha cambiado de estado por <strong>$mi_nombre</strong>.</p>
+                            
+                            <div style="background-color: #d1e7dd; color: #0f5132; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: center;">
+                                <span style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Nuevo Estado</span>
+                                <strong style="font-size: 24px;">$estado_legible</strong>
+                            </div>
 
-                        <center>
-                            <a href="http://localhost/sistema_tickets/views/ver_ticket.php?id=$ticket_id" 
-                               style="display: inline-block; background-color: $color_estado; color: #ffffff; padding: 12px 35px; border-radius: 50px; text-decoration: none; font-weight: bold;">
-                                Ver Ticket
-                            </a>
-                        </center>
-                    </div>
+                            <p style="text-align: center; color: #888;">Ticket: <em>{$owner['titulo']}</em></p>
 
-                    <div style="background-color: #fcfdfe; padding: 20px; text-align: center; color: #9aa5b1; font-size: 12px;">
-                        DAC Controls - Sistema de Gestión
+                            <center style="margin-top: 30px;">
+                                <a href="$link_ticket" style="display: inline-block; background-color: $color_text; color: #ffffff; padding: 12px 35px; border-radius: 50px; text-decoration: none; font-weight: bold;">Ver Ticket</a>
+                            </center>
+                        </div>
                     </div>
                 </div>
-            </div>
 HTML;
-            enviarCorreo($ticket_data['email'], $ticket_data['nombre'], $asunto, $html);
+                enviarCorreo($owner['email'], $owner['nombre'], $asunto, $html);
+            }
         }
 
-        header("Location: ../views/ver_ticket.php?id=$ticket_id");
+        // C) Volver
+        header("Location: ../views/ver_ticket.php?id=$ticket_id&msg=estado_ok");
         exit;
 
     } catch (PDOException $e) {
+        error_log("Error cambio estado: " . $e->getMessage());
         header("Location: ../views/ver_ticket.php?id=$ticket_id&error=db");
     }
 }

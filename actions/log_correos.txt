@@ -1,0 +1,28 @@
+--------------------------------------------------
+🚀 TIPO: ASIGNACION
+📅 FECHA: 2026-01-08 10:47:08
+📧 PARA: diegomolina@dac-controls.com
+📝 ASUNTO: 🆕 Tarea Asignada: chequear estado de perifericos
+📄 MENSAJE:
+Hola Diego Molina,
+
+Administrador te asignó la tarea:
+👉 chequear estado de perifericos
+
+Saludos.
+--------------------------------------------------
+
+--------------------------------------------------
+🚀 TIPO: FINALIZACION
+📅 FECHA: 2026-01-08 10:47:45
+📧 PARA: admin@tickets.com
+📝 ASUNTO: ✅ Tarea Lista: chequear estado de perifericos
+📄 MENSAJE:
+Hola Administrador,
+
+Diego Molina completó la tarea:
+✅ chequear estado de perifericos
+
+Fecha: 08/01/2026 10:47
+--------------------------------------------------
+

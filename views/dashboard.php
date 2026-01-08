@@ -3,10 +3,18 @@
 require '../includes/header.php'; 
 require '../config/db.php';
 
-$id_usuario = $_SESSION['usuario_id'];
+// Si no hay sesión, fuera
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: ../index.php");
+    exit;
+}
+
+$id_usuario  = $_SESSION['usuario_id'];
 $rol_usuario = $_SESSION['usuario_rol'];
 
-// CONSULTA SQL (Igual que antes)
+// 1. CONSULTA SQL INTELIGENTE
+// Si es Admin o Técnico -> Ve TODO
+// Si es Usuario -> Solo ve SUYOS
 if ($rol_usuario == 'admin' || $rol_usuario == 'tecnico') {
     $sql = "SELECT t.*, u.nombre as creador, a.nombre as agente 
             FROM tickets t 
@@ -28,24 +36,23 @@ if ($rol_usuario == 'admin' || $rol_usuario == 'tecnico') {
 
 $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 2. CÁLCULO DE KPIS + DATOS PARA GRÁFICO (🔥 MEJORA)
-$total_tickets = count($tickets);
+// 2. CÁLCULO DE KPIS
+$total_tickets    = count($tickets);
 $total_pendientes = 0;
-$total_resueltos = 0;
+$total_resueltos  = 0;
 
-// Contadores para el gráfico
-$prioridad_alta = 0;
-$prioridad_media = 0;
-$prioridad_baja = 0;
+// Contadores para el gráfico (Solo pendientes)
+$prioridad_alta   = 0;
+$prioridad_media  = 0;
+$prioridad_baja   = 0;
 
 foreach($tickets as $t) {
-    // KPI General
-    if($t['estado'] == 'cerrado') {
+    if($t['estado'] == 'cerrado' || $t['estado'] == 'resuelto') {
         $total_resueltos++;
     } else {
         $total_pendientes++;
         
-        // Solo contamos prioridades de los pendientes para el gráfico
+        // Clasificar pendientes por prioridad
         if($t['prioridad'] == 'alta') $prioridad_alta++;
         elseif($t['prioridad'] == 'media') $prioridad_media++;
         else $prioridad_baja++;
@@ -65,9 +72,8 @@ foreach($tickets as $t) {
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
             <h3 class="fw-bold text-dark mb-0"><i class="bi bi-speedometer2 text-primary me-2"></i>Panel de Control</h3>
-            <p class="text-muted small mb-0 ms-1">Bienvenido al sistema, <?php echo $_SESSION['usuario_nombre']; ?></p>
+            <p class="text-muted small mb-0 ms-1">Bienvenido al sistema, <?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?></p>
         </div>
-
     </div>
 
     <div class="row mb-4">
@@ -144,7 +150,7 @@ foreach($tickets as $t) {
                     <?php else: ?>
                         <div class="text-center py-5 text-muted opacity-50">
                             <i class="bi bi-pie-chart-fill fs-1"></i>
-                            <p class="mt-2 mb-0">Sin datos para mostrar</p>
+                            <p class="mt-2 mb-0">¡Todo al día! Sin pendientes.</p>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -173,7 +179,7 @@ foreach($tickets as $t) {
                     <tbody>
                         <?php if($total_pendientes > 0): ?>
                             <?php foreach($tickets as $ticket): ?>
-                                <?php if($ticket['estado'] == 'cerrado') continue; ?>
+                                <?php if($ticket['estado'] == 'cerrado' || $ticket['estado'] == 'resuelto') continue; ?>
                                 <tr>
                                     <td class="ps-4 fw-bold text-muted">#<?php echo $ticket['id']; ?></td>
                                     <td>
@@ -227,7 +233,7 @@ foreach($tickets as $t) {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Solo ejecutamos el gráfico si hay pendientes
+    // Configuración del Gráfico
     <?php if($total_pendientes > 0): ?>
     const ctx = document.getElementById('chartPrioridad');
 
@@ -238,9 +244,9 @@ foreach($tickets as $t) {
             datasets: [{
                 data: [<?php echo $prioridad_alta; ?>, <?php echo $prioridad_media; ?>, <?php echo $prioridad_baja; ?>],
                 backgroundColor: [
-                    '#dc3545', // Alta (Rojo Bootstrap)
-                    '#ffc107', // Media (Amarillo Bootstrap)
-                    '#198754'  // Baja (Verde Bootstrap)
+                    '#dc3545', // Alta
+                    '#ffc107', // Media
+                    '#198754'  // Baja
                 ],
                 borderWidth: 0,
                 hoverOffset: 4
@@ -252,13 +258,10 @@ foreach($tickets as $t) {
             plugins: {
                 legend: {
                     position: 'right',
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 10
-                    }
+                    labels: { usePointStyle: true, boxWidth: 10 }
                 }
             },
-            cutout: '70%', // Hace la dona más fina y elegante
+            cutout: '70%', 
         }
     });
     <?php endif; ?>

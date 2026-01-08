@@ -1,22 +1,25 @@
 <?php
-// sistema_tickets/views/mis_tickets.php
+// views/mis_tickets.php
 require '../includes/header.php';
 require '../config/db.php';
 
-// 1. Seguridad básica
-if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.php"); exit; }
+// 1. Candado de Seguridad
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: ../index.php");
+    exit;
+}
 
 $id_usuario  = $_SESSION['usuario_id'];
 $rol_usuario = $_SESSION['usuario_rol'];
 
-// 2. Determinar qué ver (Lógica simplificada)
-// Solo permitimos 'global' si NO es un usuario normal.
+// 2. Lógica de Vistas (¿Qué vamos a mostrar?)
+// Solo permitimos ver TODO (global) si es Admin o Técnico.
 $ver_global = (isset($_GET['view']) && $_GET['view'] == 'global' && $rol_usuario != 'usuario');
 
-// 3. Configuración visual según la vista
+// 3. Configuración de Textos e Iconos según la vista
 if ($ver_global) {
     $titulo_pagina = "Mesa de Ayuda (Global)";
-    $subtitulo     = "Visión general de todos los tickets.";
+    $subtitulo     = "Visión general de todos los tickets del sistema.";
     $icono         = "bi-inbox-fill";
 } else {
     $titulo_pagina = "Mis Solicitudes";
@@ -24,8 +27,7 @@ if ($ver_global) {
     $icono         = "bi-person-workspace";
 }
 
-// 4. Construcción Inteligente del SQL
-// Definimos la base de la consulta UNA sola vez
+// 4. Construcción de la Consulta SQL
 $sql = "SELECT t.*, u.nombre as creador, a.nombre as agente 
         FROM tickets t 
         JOIN usuarios u ON t.usuario_id = u.id 
@@ -33,22 +35,33 @@ $sql = "SELECT t.*, u.nombre as creador, a.nombre as agente
 
 $params = [];
 
-// Si NO es global, aplicamos el filtro de dueño/agente
+// Si es vista PERSONAL (NO Global)
 if (!$ver_global) {
-    $sql .= " WHERE t.usuario_id = :uid OR t.agente_id = :aid";
-    $params = [':uid' => $id_usuario, ':aid' => $id_usuario];
+    
+    // --- CORRECCIÓN AQUÍ ---
+    if ($rol_usuario === 'usuario') {
+        // Si soy usuario normal, SOLO veo lo que yo creé. (Ignoro asignaciones erróneas)
+        $sql .= " WHERE t.usuario_id = :uid";
+        $params = [':uid' => $id_usuario];
+    } else {
+        // Si soy Admin/Técnico, veo lo que creé O lo que me asignaron.
+        $sql .= " WHERE t.usuario_id = :uid OR t.agente_id = :aid";
+        $params = [':uid' => $id_usuario, ':aid' => $id_usuario];
+    }
+    // -----------------------
 }
 
-// Ordenamos siempre igual
+// Ordenar por fecha (lo más nuevo arriba)
 $sql .= " ORDER BY t.fecha_creacion DESC";
 
-// 5. Ejecución única
+// 5. Ejecutar Consulta
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $lista_tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="container-fluid">
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold text-dark mb-0">
@@ -82,12 +95,14 @@ $lista_tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php foreach($lista_tickets as $t): ?>
                                 <tr>
                                     <td class="ps-4 fw-bold text-muted">#<?php echo $t['id']; ?></td>
+                                    
                                     <td>
                                         <div class="fw-bold text-dark"><?php echo htmlspecialchars($t['titulo']); ?></div>
                                         <div class="small text-muted">
                                             <i class="bi bi-building me-1"></i><?php echo htmlspecialchars($t['departamento']); ?>
                                         </div>
                                     </td>
+                                    
                                     <td><?php echo htmlspecialchars($t['creador']); ?></td>
                                     
                                     <td>
@@ -107,6 +122,7 @@ $lista_tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td>
                                         <?php 
                                             $prio = $t['prioridad'];
+                                            // Lógica ternaria para colores: Alta=Rojo, Media=Amarillo, Baja=Verde
                                             $classP = ($prio=='alta') ? 'danger' : (($prio=='media') ? 'warning' : 'success');
                                         ?>
                                         <span class="badge text-<?php echo $classP; ?> border border-<?php echo $classP; ?> rounded-pill px-2">
@@ -117,8 +133,9 @@ $lista_tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td>
                                         <?php 
                                             $est = $t['estado'];
+                                            // Abierto=Rojo, En Proceso=Amarillo, Resuelto/Cerrado=Verde
                                             $classE = ($est=='abierto') ? 'danger' : (($est=='en_proceso') ? 'warning' : 'success');
-                                            $iconE  = ($est=='cerrado') ? 'bi-check-circle' : 'bi-circle-fill';
+                                            $iconE  = ($est=='cerrado' || $est=='resuelto') ? 'bi-check-circle' : 'bi-circle-fill';
                                         ?>
                                         <span class="badge bg-<?php echo $classE; ?> bg-opacity-10 text-<?php echo $classE; ?> rounded-pill px-3">
                                             <i class="bi <?php echo $iconE; ?> me-1 small"></i>
@@ -137,7 +154,7 @@ $lista_tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <tr>
                                 <td colspan="8" class="text-center py-5 text-muted">
                                     <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
-                                    No se encontraron tickets.
+                                    No se encontraron tickets en esta vista.
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -147,4 +164,5 @@ $lista_tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </div>
+
 <?php require '../includes/footer.php'; ?>

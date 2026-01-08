@@ -1,0 +1,50 @@
+----------------------------------------
+FECHA: 2026-01-08 14:14:33
+DE: diegomolina@dac-controls.com
+PARA: admin@tickets.com
+ASUNTO: ✅ Tarea Completada: Revisar servidor
+MENSAJE:
+Hola Administrador,
+
+El usuario Diego Molina ha completado la tarea:
+📌 Revisar servidor
+
+Saludos,
+Sistema HelpDesk.
+========================================
+TIPO: ASIGNACION
+FECHA: 2026-01-08 14:26:41
+DE: diegomolina@dac-controls.com
+PARA: diegomolina@dac-controls.com
+ASUNTO: 🆕 Nueva Tarea Asignada: revisar el servidor
+MENSAJE:
+Hola Diego Molina,
+
+Administrador te ha asignado una nueva tarea en el sistema:
+
+📝 Tarea: revisar el servidor
+📅 Fecha: 08/01/2026 14:26
+
+Por favor, ingresa a 'Mis Tareas' para gestionarla.
+Saludos,
+Sistema HelpDesk.
+========================================
+
+========================================
+TIPO: FINALIZACION
+FECHA: 2026-01-08 14:27:10
+DE: diegomolina@dac-controls.com
+PARA: admin@tickets.com
+ASUNTO: ✅ Tarea Finalizada: revisar el servidor
+MENSAJE:
+Hola Administrador,
+
+Diego Molina ha marcado como COMPLETADA la tarea:
+
+✅ revisar el servidor
+📅 Finalizada el: 08/01/2026 14:27
+
+Saludos,
+Sistema HelpDesk.
+========================================
+

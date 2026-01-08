@@ -1,4 +1,5 @@
 <?php
+
 // sistema_tickets/index.php
 session_start();
 

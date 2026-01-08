@@ -1,8 +1,9 @@
 <?php
 // views/crear_ticket.php
-require '../includes/header.php';
-require '../config/db.php';
+require '../includes/header.php'; // Traemos la barra lateral y estilos
+require '../config/db.php';     // Conexión a BD (aunque aquí no la usamos directo, es buena práctica tenerla)
 
+// Si no hay sesión iniciada, lo mandamos al login de una.
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../index.php");
     exit;
@@ -35,7 +36,7 @@ if (!isset($_SESSION['usuario_id'])) {
                         <div class="row mb-4">
                             <div class="col-md-6 mb-3 mb-md-0">
                                 <label class="form-label text-muted small fw-bold">Nombre</label>
-                                <input type="text" class="form-control bg-light border-0" value="<?php echo $_SESSION['usuario_nombre']; ?>" readonly>
+                                <input type="text" class="form-control bg-light border-0" value="<?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?>" readonly>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold">Departamento *</label>
@@ -114,12 +115,12 @@ if (!isset($_SESSION['usuario_id'])) {
             <div class="card border-0 shadow-sm mb-4 bg-info bg-opacity-10" style="border-radius: 15px;">
                 <div class="card-body p-4">
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill me-2 text-info"></i>¿Ayuda Inmediata?</h5>
-                    <p class="small text-muted mb-3">Si tu problema detiene la operación crítica, llama a soporte.</p>
+                    <p class="small text-muted mb-3">Si tu problema detiene la operación crítica (ej: servidor caído), llama a soporte directo.</p>
                     <div class="d-flex align-items-center bg-white p-3 rounded shadow-sm">
                         <i class="bi bi-telephone-fill fs-4 text-primary me-3"></i>
                         <div>
                             <small class="text-muted d-block">Soporte Urgente</small>
-                            <span class="fw-bold text-dark">+56 9 1234 5678</span>
+                            <span class="fw-bold text-dark">+56 9 45685320</span>
                         </div>
                     </div>
                 </div>

@@ -23,7 +23,7 @@ $mis_tareas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // 2. Obtener tareas enviadas (Admin/Tecnico)
 $tareas_enviadas = [];
-$usuarios_lista = []; // Inicializamos la variable
+$usuarios_lista = []; 
 
 if ($mi_rol != 'usuario') {
     $sqlEnv = "SELECT t.*, u.nombre as responsable_nombre 
@@ -36,7 +36,7 @@ if ($mi_rol != 'usuario') {
     $stmtEnv->execute(['creador' => $mi_id, 'excluir_propio' => $mi_id]);
     $tareas_enviadas = $stmtEnv->fetchAll(PDO::FETCH_ASSOC);
 
-    // Obtenemos la lista para el buscador
+    // Lista para el buscador
     $stmtUsers = $pdo->query("SELECT id, nombre FROM usuarios WHERE activo = 1 ORDER BY nombre ASC");
     $usuarios_lista = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -78,7 +78,6 @@ if ($mi_rol != 'usuario') {
                             
                             <datalist id="listaUsuarios">
                                 <option data-id="<?php echo $mi_id; ?>" value="Para mí (Personal)">
-                                
                                 <?php if (!empty($usuarios_lista)): ?>
                                     <?php foreach($usuarios_lista as $u): ?>
                                         <?php if($u['id'] != $mi_id): ?>
@@ -89,7 +88,6 @@ if ($mi_rol != 'usuario') {
                             </datalist>
                         </div>
                         <div class="form-text small mt-1">Si lo dejas vacío, será para ti.</div>
-
                     </div>
                     <?php else: ?>
                         <input type="hidden" id="input-asignar" value=""> 
@@ -266,7 +264,6 @@ if ($mi_rol != 'usuario') {
                 }
             }
         }
-        
 
         try {
             const res = await fetch('../actions/tareas_controller.php', {
@@ -275,10 +272,11 @@ if ($mi_rol != 'usuario') {
                 body: JSON.stringify({ 
                     accion: 'crear', 
                     titulo: texto, 
-                    asignado_a: idSeleccionado // Enviamos el ID, no el nombre
+                    asignado_a: idSeleccionado // El controlador recibe el ID y se encarga del correo
                 })
             });
-            if(res.ok) location.reload();
+            const data = await res.json();
+            if(data.status === 'ok') location.reload();
         } catch (error) { console.error(error); }
     }
 
