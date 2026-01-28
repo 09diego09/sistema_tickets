@@ -5,10 +5,10 @@
 */
 
 // 1. CREDENCIALES
-$host     = 'sql302.infinityfree.com';
-$dbname   = 'if0_40858595_sistema_tickets';
-$username = 'if0_40858595';
-$password = 'sHQiHrFzd9RS8';
+$host     = 'localhost';
+$dbname   = 'sistema_tickets';
+$username = 'root';
+$password = '';
 $port     = '3306';
 
 try {
