@@ -5,11 +5,11 @@
 */
 
 // 1. CREDENCIALES
-$host     = 'localhost';
-$dbname   = 'sistema_tickets';
-$username = 'root';
+$host     = '';
+$dbname   = '';
+$username = '';
 $password = '';
-$port     = '3306';
+$port     = '';
 
 try {
     // 2. Definimos la conexión (DSN)
