@@ -1,59 +1,61 @@
-🎫 DAC Controls HelpDesk - Sistema de Tickets
-Sistema de Mesa de Ayuda (HelpDesk) desarrollado para la gestión, seguimiento y resolución centralizada de incidentes técnicos y tareas de soporte TI. Este proyecto utiliza una arquitectura MVC (Modelo-Vista-Controlador) para garantizar un código escalable y organizado.
+# 🎫 DAC CONTROLS - SISTEMA DE GESTIÓN DE TICKETS Y SOPORTE
+# Versión 1.0 - Documentación del Proyecto
 
-🚀 Características Principales
-Gestión de Roles: Niveles de acceso diferenciados para Administradores, Técnicos y Usuarios finales.
+## 📋 DESCRIPCIÓN GENERAL
+Este sistema es una plataforma web integral diseñada para la recepción, seguimiento y resolución de requerimientos técnicos (Tickets) y asignación de labores diarias (Tareas). El objetivo principal es centralizar la comunicación interna de DAC Controls, eliminando la dispersión de información en correos o chats informales.
 
-Ciclo de Vida del Ticket: Seguimiento completo de estados (Abierto, En Proceso, Resuelto y Cerrado).
+Desarrollado con una arquitectura limpia bajo el patrón de diseño MVC (Modelo-Vista-Controlador).
 
-Módulo de Tareas: Gestión de labores diarias independiente de los reportes de fallas.
+---
 
-Notificaciones: Sistema preparado para alertas vía correo electrónico (SMTP).
+## 🚀 CARACTERÍSTICAS PRINCIPALES
+* Gestión de Roles: Permisos diferenciados para Administradores (Gerencia/TI), Técnicos y Usuarios finales.
+* Módulo de Tickets: Ciclo de vida completo desde la apertura hasta el cierre con historial de cambios.
+* Panel de Tareas: Control de actividades diarias con estados de avance en tiempo real.
+* Interfaz Profesional: Diseño limpio, intuitivo y adaptado para un entorno corporativo.
+* Escalabilidad: Preparado para futuras integraciones con Microsoft Teams y alertas SMTP.
 
-Panel Administrativo: Dashboard con métricas clave para la toma de decisiones.
+---
 
-🛠️ Tecnologías Utilizadas
-Backend: PHP 8.x (Nativo) bajo arquitectura MVC.
+## 🛠️ STACK TECNOLÓGICO
+* LENGUAJE: PHP 8.x (Arquitectura MVC)
+* BASE DE DATOS: MySQL / MariaDB (Diseñada en MySQL Workbench)
+* FRONTEND: HTML5, CSS3, JavaScript (Vanilla)
+* SERVIDOR DE DESARROLLO: XAMPP / Apache
 
-Base de Datos: MySQL / MariaDB (Gestionado con MySQL Workbench).
+---
 
-Frontend: HTML5, CSS3 (Diseño corporativo), JavaScript.
+## ⚙️ GUÍA DE INSTALACIÓN (ENTORNO LOCAL)
 
-Entorno de Desarrollo: XAMPP (Servidor Apache).
+1. PREPARACIÓN DEL DIRECTORIO:
+   Clonar o descargar el repositorio dentro de la carpeta 'htdocs' de XAMPP:
+   Ruta sugerida: C:\xampp\htdocs\sistema_tickets\
 
-⚙️ Instalación y Configuración
-Clonar el Repositorio: Copia el proyecto dentro de la carpeta htdocs de tu instalación de XAMPP:
+2. CONFIGURACIÓN DE BASE DE DATOS:
+   - Iniciar los servicios de Apache y MySQL en el panel de XAMPP.
+   - Crear una base de datos denominada 'sistema_tickets_db' en MySQL Workbench o phpMyAdmin.
+   - Importar el archivo SQL ubicado en la carpeta '/database' del proyecto.
 
-Bash
+3. CONEXIÓN AL SERVIDOR:
+   - Localizar el archivo de configuración en '/config/database.php' (o similar).
+   - Verificar que las credenciales coincidan con las de su servidor local (Host: localhost, Usuario: root, Pass: "").
 
-git clone https://github.com/TuUsuario/sistema_tickets.git
-Configuración de la Base de Datos:
+4. ACCESO AL SISTEMA:
+   - Abrir el navegador web y navegar a: http://localhost/sistema_tickets/
 
-Utiliza MySQL Workbench o phpMyAdmin para crear la base de datos: sistema_tickets_db.
+---
 
-Importa el archivo .sql ubicado en la carpeta /database para generar las tablas y la estructura necesaria.
+## 📁 ESTRUCTURA DE DIRECTORIOS
+* /actions   -> Controladores y procesamiento de datos.
+* /assets    -> Recursos estáticos (Estilos CSS, JS, imágenes corporativas).
+* /config    -> Parámetros del sistema y conexión a BD.
+* /views     -> Vistas de usuario (Interfaces de tickets, dashboard y login).
+* /includes  -> Componentes reutilizables (Navegación, modales, headers y footers).
 
-Ajustes de Conexión:
+---
 
-Dirígete a la carpeta /config.
+## 📝 NOTAS DE DESARROLLO
+Este proyecto se encuentra en fase de validación de prototipo. La arquitectura está diseñada para facilitar la migración a un hosting profesional (VPS), permitiendo la salida a producción y la habilitación de correos corporativos seguros.
 
-Edita el archivo de conexión con tus credenciales locales (por defecto en XAMPP: user: root, password: "").
-
-Ejecución:
-
-Inicia los módulos de Apache y MySQL en XAMPP.
-
-Accede desde tu navegador a: http://localhost/sistema_tickets
-
-📁 Estructura del Proyecto
-/actions: Lógica de procesamiento y controladores de formularios.
-
-/assets: Recursos estáticos (CSS, JS, Imágenes).
-
-/config: Parámetros de conexión a la base de datos.
-
-/views: Interfaces de usuario y vistas finales.
-
-/includes: Fragmentos reutilizables (Modales, headers, footers).
-
-⌨️ con ❤️ por Diego y Gemini 🚀
+---
+⌨️ Desarrollado con dedicación por Diego (y el apoyo constante de Gemini) para DAC Controls. 🚀
