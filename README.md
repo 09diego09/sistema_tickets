@@ -1,64 +1,59 @@
-# 🎫 Sistema de Tickets
+🎫 DAC Controls HelpDesk - Sistema de Tickets
+Sistema de Mesa de Ayuda (HelpDesk) desarrollado para la gestión, seguimiento y resolución centralizada de incidentes técnicos y tareas de soporte TI. Este proyecto utiliza una arquitectura MVC (Modelo-Vista-Controlador) para garantizar un código escalable y organizado.
 
-Este es un sistema web desarrollado para la gestión, seguimiento y resolución de tickets de soporte técnico. El proyecto está construido siguiendo el patrón MVC (Modelo-Vista-Controlador) y está optimizado para funcionar en un entorno local con XAMPP.
+🚀 Características Principales
+Gestión de Roles: Niveles de acceso diferenciados para Administradores, Técnicos y Usuarios finales.
 
-## 🚀 Características Principales
+Ciclo de Vida del Ticket: Seguimiento completo de estados (Abierto, En Proceso, Resuelto y Cerrado).
 
-* **Gestión de Usuarios:** Registro e inicio de sesión.
-* **Creación de Tickets:** Los usuarios pueden reportar incidentes.
-* **Seguimiento:** Estado de los tickets (Abierto, En proceso, Cerrado).
-* **Panel Administrativo:** Gestión centralizada de las solicitudes.
+Módulo de Tareas: Gestión de labores diarias independiente de los reportes de fallas.
 
-## 🛠️ Tecnologías Utilizadas
+Notificaciones: Sistema preparado para alertas vía correo electrónico (SMTP).
 
-* **Lenguaje Principal:** PHP (Nativo).
-* **Base de Datos:** MySQL / MariaDB.
-* **Servidor Local:** XAMPP (Apache).
-* **Frontend:** HTML5, CSS3, JavaScript.
+Panel Administrativo: Dashboard con métricas clave para la toma de decisiones.
 
-## ⚙️ Instalación y Configuración
+🛠️ Tecnologías Utilizadas
+Backend: PHP 8.x (Nativo) bajo arquitectura MVC.
 
-# 🎫 Sistema de Tickets - DAC Controls HelpDesk
+Base de Datos: MySQL / MariaDB (Gestionado con MySQL Workbench).
 
-Sistema de Mesa de Ayuda (HelpDesk) desarrollado en PHP y MySQL para la gestión centralizada de incidentes técnicos y soporte TI.
+Frontend: HTML5, CSS3 (Diseño corporativo), JavaScript.
 
-![Estado del Proyecto](https://img.shields.io/badge/Estado-EnProceso-success)
-![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4)
-![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1)
+Entorno de Desarrollo: XAMPP (Servidor Apache).
 
-## 📋 Características
+⚙️ Instalación y Configuración
+Clonar el Repositorio: Copia el proyecto dentro de la carpeta htdocs de tu instalación de XAMPP:
 
-- **Roles de Usuario:** Sistema de permisos para Administradores, Técnicos y Usuarios finales.
-- **Gestión de Tickets:** Ciclo de vida completo (Abierto, En Proceso, Resuelto).
-- **Notificaciones SMTP:** Envío automático de correos electrónicos al actualizar tickets.
-- **Archivos Adjuntos:** Soporte para evidencias en imágenes y PDF.
-- **Dashboard:** Gráficos estadísticos en tiempo real.
+Bash
 
-## 🚀 Instalación
+git clone https://github.com/TuUsuario/sistema_tickets.git
+Configuración de la Base de Datos:
 
-1. Clonar el repositorio en `htdocs`:
-   ```bash
-   git clone [https://github.com/TU_USUARIO/sistema_tickets.git](https://github.com/TU_USUARIO/sistema_tickets.git)
+Utiliza MySQL Workbench o phpMyAdmin para crear la base de datos: sistema_tickets_db.
 
-2.  **Base de Datos:**
-    * Abre `phpMyAdmin` (http://localhost/phpmyadmin). o puedes utilizar mysql Workbench, con eso he trabajado, el phpmyadmin es sugerencia de gemini, la herramienta con la que me estoy apoyando
-    * Crea una base de datos llamada `sistema_tickets_db` (o el nombre que prefieras).
-    * Importa el archivo SQL ubicado en la carpeta `database/` (si existe) o ejecuta el script de creación.
+Importa el archivo .sql ubicado en la carpeta /database para generar las tablas y la estructura necesaria.
 
-3.  **Configuración:**
-    * Ve a la carpeta `config/`.
-    * Asegúrate de que los datos de conexión (usuario, contraseña y nombre de BD) coincidan con los de tu XAMPP.
+Ajustes de Conexión:
 
-4.  **Ejecutar:**
-    * Abre tu navegador y entra a: `http://localhost/sistema_tickets`
+Dirígete a la carpeta /config.
 
-## 📁 Estructura del Proyecto
+Edita el archivo de conexión con tus credenciales locales (por defecto en XAMPP: user: root, password: "").
 
-* `/actions`: Lógica de procesamiento de formularios.
-* `/assets`: Imágenes y recursos estáticos.
-* `/config`: Archivos de conexión a la base de datos.
-* `/views`: Las pantallas que ve el usuario (HTML/PHP).
-* `/includes`: Fragmentos de código reutilizables (header, footer).
+Ejecución:
 
----
-⌨️ con ❤️ por Diego y Gemini jasjas
+Inicia los módulos de Apache y MySQL en XAMPP.
+
+Accede desde tu navegador a: http://localhost/sistema_tickets
+
+📁 Estructura del Proyecto
+/actions: Lógica de procesamiento y controladores de formularios.
+
+/assets: Recursos estáticos (CSS, JS, Imágenes).
+
+/config: Parámetros de conexión a la base de datos.
+
+/views: Interfaces de usuario y vistas finales.
+
+/includes: Fragmentos reutilizables (Modales, headers, footers).
+
+⌨️ con ❤️ por Diego y Gemini 🚀
