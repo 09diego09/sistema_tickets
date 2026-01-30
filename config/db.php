@@ -1,15 +1,14 @@
 <?php
 /*
 * Ubicación: config/db.php
-* VERSIÓN FINAL - INFINITYFREE
 */
 
 // 1. CREDENCIALES
-$host     = '';
-$dbname   = '';
-$username = '';
+$host     = 'localhost';
+$dbname   = 'sistema_tickets';
+$username = 'root';
 $password = '';
-$port     = '';
+$port     = '3306';
 
 try {
     // 2. Definimos la conexión (DSN)
